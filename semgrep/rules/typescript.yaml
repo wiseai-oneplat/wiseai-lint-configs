@@ -1,0 +1,19 @@
+rules:
+  - id: typescript-console-log
+    message: 프로덕션 코드에 console.log를 남기지 마세요.
+    severity: WARNING
+    languages: [typescript, javascript]
+    pattern-either:
+      - pattern: console.log(...)
+      - pattern: console.debug(...)
+    paths:
+      exclude:
+        - '**/*.test.ts'
+        - '**/*.test.tsx'
+        - '**/*.spec.ts'
+
+  - id: typescript-as-any
+    message: '`as any` 타입 캐스팅을 피하세요. 정확한 타입 또는 unknown을 사용하세요.'
+    severity: WARNING
+    languages: [typescript]
+    pattern: $X as any

@@ -1,0 +1,12 @@
+id: no-print
+language: python
+severity: warning
+message: print()을 logger.info()로 대체하세요.
+rule:
+  pattern: print($$$ARGS)
+fix: logger.info($$$ARGS)
+files:
+  - "**/*.py"
+ignores:
+  - "tests/**"
+  - "scripts/**"

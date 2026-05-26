@@ -1,0 +1,21 @@
+rules:
+  - id: go-panic-in-library
+    message: 라이브러리/패키지 코드에서 panic을 사용하지 마세요. error 반환으로 대체.
+    severity: ERROR
+    languages: [go]
+    pattern: panic(...)
+    paths:
+      exclude:
+        - '**/*_test.go'
+        - 'cmd/'
+
+  - id: go-context-background-in-handler
+    message: 요청 핸들러에서 context.Background()를 사용하지 마세요. 요청 context를 전파하세요.
+    severity: WARNING
+    languages: [go]
+    pattern: |
+      func $F($W http.ResponseWriter, $R *http.Request) {
+        ...
+        context.Background()
+        ...
+      }

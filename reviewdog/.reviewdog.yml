@@ -1,0 +1,47 @@
+runner:
+  semgrep:
+    cmd: semgrep --config=semgrep/ci.yaml --json
+    format: semgrepjson
+    name: semgrep
+    level: warning
+
+  ast-grep:
+    cmd: sg scan --config ast-grep/sgconfig.yml --json
+    format: rdjson
+    name: ast-grep
+    level: warning
+
+  ruff:
+    cmd: ruff check --output-format=rdjson .
+    format: rdjson
+    name: ruff
+    level: warning
+
+  golangci-lint:
+    cmd: golangci-lint run --out-format=line-number ./...
+    errorformat:
+      - "%f:%l:%c: %m"
+    name: golangci-lint
+    level: warning
+
+  shellcheck:
+    cmd: shellcheck -f gcc $(find . -name '*.sh' -not -path './node_modules/*')
+    errorformat:
+      - "%f:%l:%c: %trror: %m"
+      - "%f:%l:%c: %tarning: %m"
+      - "%f:%l:%c: %tote: %m"
+    name: shellcheck
+    level: warning
+
+  hadolint:
+    cmd: hadolint $(find . -name 'Dockerfile*')
+    errorformat:
+      - "%f:%l %m"
+    name: hadolint
+    level: warning
+
+  kubeconform:
+    cmd: kubeconform -summary -output json $(find . -path '*/manifest/*.yaml' -o -path '*/templates/*.yaml')
+    format: rdjson
+    name: kubeconform
+    level: warning

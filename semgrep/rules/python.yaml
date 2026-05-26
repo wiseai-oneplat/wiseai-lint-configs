@@ -1,0 +1,22 @@
+rules:
+  - id: python-naive-datetime
+    message: timezone-naive datetime을 사용하지 마세요. datetime.now(tz=...) 또는 datetime.now(timezone.utc) 사용.
+    severity: WARNING
+    languages: [python]
+    patterns:
+      - pattern-either:
+          - pattern: datetime.datetime.now()
+          - pattern: datetime.now()
+      - pattern-not: datetime.now(tz=...)
+      - pattern-not: datetime.datetime.now(tz=...)
+
+  - id: python-print-in-source
+    message: 프로덕션 코드에 print()를 사용하지 마세요. logger를 사용하세요.
+    severity: WARNING
+    languages: [python]
+    pattern: print(...)
+    paths:
+      exclude:
+        - tests/
+        - scripts/
+        - '**/__main__.py'

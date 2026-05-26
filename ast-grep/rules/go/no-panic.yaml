@@ -1,0 +1,11 @@
+id: no-panic
+language: go
+severity: error
+message: 라이브러리 코드에서 panic을 사용하지 마세요. error를 반환하세요.
+rule:
+  pattern: panic($MSG)
+files:
+  - "**/*.go"
+ignores:
+  - "**/*_test.go"
+  - "cmd/**"

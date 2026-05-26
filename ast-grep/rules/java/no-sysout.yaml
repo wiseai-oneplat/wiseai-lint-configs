@@ -1,0 +1,13 @@
+id: no-system-out
+language: java
+severity: warning
+message: System.out.println 대신 SLF4J logger를 사용하세요.
+rule:
+  any:
+    - pattern: System.out.println($$$ARGS)
+    - pattern: System.err.println($$$ARGS)
+files:
+  - "**/*.java"
+ignores:
+  - "**/test/**"
+  - "**/*Test.java"

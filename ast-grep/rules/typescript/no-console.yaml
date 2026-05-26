@@ -1,0 +1,15 @@
+id: no-console
+language: typescript
+severity: warning
+message: 프로덕션 코드에 console.log를 남기지 마세요.
+rule:
+  any:
+    - pattern: console.log($$$ARGS)
+    - pattern: console.debug($$$ARGS)
+files:
+  - "**/*.ts"
+  - "**/*.tsx"
+ignores:
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+  - "**/*.spec.ts"

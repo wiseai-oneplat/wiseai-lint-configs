@@ -1,0 +1,18 @@
+rules:
+  - id: hardcoded-secret-key
+    message: 하드코딩된 시크릿 키로 보이는 패턴이 발견되었습니다. 환경 변수로 분리하세요.
+    severity: ERROR
+    languages: [generic]
+    patterns:
+      - pattern-regex: '(?i)(api[_-]?key|secret[_-]?key|password)\s*[:=]\s*["''][A-Za-z0-9+/=]{16,}["'']'
+    paths:
+      exclude:
+        - '*.test.*'
+        - 'tests/'
+        - '*.md'
+
+  - id: unresolved-fixme
+    message: FIXME 주석은 이슈로 전환하거나 해결 후 제거하세요.
+    severity: INFO
+    languages: [generic]
+    pattern-regex: '(?i)FIXME[:\s]'

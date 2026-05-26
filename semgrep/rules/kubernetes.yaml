@@ -1,0 +1,42 @@
+rules:
+  - id: k8s-image-tag-latest
+    message: "컨테이너 이미지에 :latest 태그를 사용하지 마세요. 명시적 버전 또는 digest를 사용하세요."
+    severity: ERROR
+    languages: [yaml]
+    pattern-regex: 'image:\s*[^\s:]+:latest\b'
+    paths:
+      include:
+        - '**/*.yaml'
+        - '**/*.yml'
+
+  - id: k8s-image-tag-missing
+    message: "컨테이너 이미지에 태그를 명시하세요. (digest 또는 semver 태그)"
+    severity: WARNING
+    languages: [yaml]
+    pattern-regex: '^\s*image:\s*[a-z0-9./_-]+\s*$'
+    paths:
+      include:
+        - '**/templates/**'
+        - 'manifest/**'
+
+  - id: k8s-privileged-true
+    message: "privileged: true는 사용하지 마세요. 필요한 capability만 추가하세요."
+    severity: ERROR
+    languages: [yaml]
+    pattern-regex: 'privileged:\s*true'
+
+  - id: k8s-hostnetwork-true
+    message: "hostNetwork: true는 노드 네트워크에 직접 노출됩니다. 정말 필요한지 검토하세요."
+    severity: ERROR
+    languages: [yaml]
+    pattern-regex: 'hostNetwork:\s*true'
+
+  - id: k8s-imagepullpolicy-always-missing
+    message: "imagePullPolicy를 명시하세요. (변경 가능한 태그 사용 시 Always 권장)"
+    severity: INFO
+    languages: [yaml]
+    pattern-regex: 'image:\s*[^\s:]+'
+    paths:
+      include:
+        - '**/templates/**'
+        - 'manifest/**'

@@ -1,0 +1,7 @@
+rules:
+  - extends: ./rules/base.yaml
+  - extends: ./rules/python.yaml
+  - extends: ./rules/go.yaml
+  - extends: ./rules/java.yaml
+  - extends: ./rules/typescript.yaml
+  - extends: ./rules/kubernetes.yaml

@@ -1,0 +1,95 @@
+# 각 저장소의 .github/workflows/lint.yml에서 호출:
+#
+# jobs:
+#   lint:
+#     uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.1.0
+#     with:
+#       languages: 'python,go'    # 쉼표 구분, 옵션: python,go,java,typescript,shell,dockerfile,kubernetes,helm
+#     secrets:
+#       reviewdog_token: ${{ secrets.GITHUB_TOKEN }}
+
+name: Shared Lint
+
+on:
+  workflow_call:
+    inputs:
+      languages:
+        description: '쉼표 구분 언어/도메인 목록'
+        required: true
+        type: string
+      configs_ref:
+        description: '공유 설정 리포 ref (tag/branch)'
+        required: false
+        type: string
+        default: 'v0.1.0'
+    secrets:
+      reviewdog_token:
+        required: true
+
+jobs:
+  semgrep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: wiseai-oneplat/wiseai-lint-configs
+          ref: ${{ inputs.configs_ref }}
+          path: .lint-configs
+      - uses: reviewdog/action-setup@v1
+      - run: pip install semgrep
+      - name: Run semgrep
+        run: |
+          semgrep --config .lint-configs/semgrep/ci.yaml --json > semgrep.json || true
+          cat semgrep.json | reviewdog -f=semgrepjson -name=semgrep -reporter=github-pr-review
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.reviewdog_token }}
+
+  ast-grep:
+    runs-on: ubuntu-latest
+    if: contains(inputs.languages, 'python') || contains(inputs.languages, 'go') || contains(inputs.languages, 'java') || contains(inputs.languages, 'typescript')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: wiseai-oneplat/wiseai-lint-configs
+          ref: ${{ inputs.configs_ref }}
+          path: .lint-configs
+      - uses: ast-grep/action@v1
+        with:
+          config: .lint-configs/ast-grep/sgconfig.yml
+
+  shellcheck:
+    runs-on: ubuntu-latest
+    if: contains(inputs.languages, 'shell')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: reviewdog/action-shellcheck@v1
+        with:
+          github_token: ${{ secrets.reviewdog_token }}
+          reporter: github-pr-review
+          level: warning
+
+  hadolint:
+    runs-on: ubuntu-latest
+    if: contains(inputs.languages, 'dockerfile')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: reviewdog/action-hadolint@v1
+        with:
+          github_token: ${{ secrets.reviewdog_token }}
+          reporter: github-pr-review
+
+  kubeconform:
+    runs-on: ubuntu-latest
+    if: contains(inputs.languages, 'kubernetes') || contains(inputs.languages, 'helm')
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install kubeconform
+        run: |
+          curl -sL https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz | tar xz
+          sudo mv kubeconform /usr/local/bin/
+      - name: Validate manifests
+        run: |
+          find . \( -path '*/manifest/*.yaml' -o -path '*/templates/*.yaml' \) -print0 \
+            | xargs -0 kubeconform -summary -strict || true

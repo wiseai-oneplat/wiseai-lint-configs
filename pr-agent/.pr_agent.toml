@@ -1,0 +1,61 @@
+# PR-Agent (qodo-merge) 공유 설정 — wiseai-oneplat 조직 전체
+# 각 저장소에 복사하거나 git submodule로 참조.
+
+[config]
+model = "claude-opus-4-7"
+fallback_models = ["claude-sonnet-4-6"]
+language = "ko"
+verbosity_level = 2
+publish_output = true
+publish_output_progress = false
+
+[pr_reviewer]
+require_score_review = true
+require_tests_review = true
+require_security_review = true
+require_focused_review = false
+num_code_suggestions = 4
+extra_instructions = """
+wiseai-oneplat 조직 컨텍스트:
+
+[애플리케이션]
+- voxBridge: LiveKit 기반 실시간 음성. WebSocket/스트리밍 안전성, latency budget 점검.
+- wiseai-aiu: Spring DDD. 도메인 경계 침범 / Anemic Model 패턴 점검.
+- wiseai-emr-pipeline: EMR 데이터 파이프라인 (Go). 멱등성, 재시도, 백프레셔 점검.
+- inbound-project / outbound-project: 콜 에이전트 (Python). LLM 비용/타임아웃/fallback model 누락 점검.
+- service-planning-agent: 에이전트 흐름. 프롬프트/툴 사용 변경 시 회귀 위험 점검.
+
+[RPA]
+- wiseai-rpa-dental / wiseai-rpa-medical: Windows 자동화. 의료기관별 변형 분기, 좌표/타이밍 의존성 점검.
+
+[인프라]
+- livekit-inbound: SIP/EKS 결합부. 보안 그룹/포트 변경 시 영향 점검.
+- infra: NCP/EKS manifest + Shell. 시크릿/RBAC/imagePullPolicy 점검.
+- wiseai-helm-charts: 차트 변경 시 호환성 (values schema, 기본값 변경) 점검.
+- homebrew-tools: 사내 CLI. 설치 스크립트 안전성 점검.
+
+[조직 공통 점검]
+- 시크릿/PII 하드코딩 여부.
+- 의료법/개인정보 컴플라이언스 (한국 의료 EMR 도메인).
+- idempotency_key 누락 (외부 호출/예약/결제 시 필수).
+- 비동기 안전성 (context 전파, race condition, goroutine leak).
+- 이미지 태그 latest 사용 금지.
+"""
+
+[pr_description]
+add_original_user_description = true
+generate_ai_title = false
+publish_labels = true
+
+[pr_code_suggestions]
+num_code_suggestions = 4
+extra_instructions = """
+- ruff/mypy/golangci-lint/biome/SpotBugs/shellcheck/hadolint으로 이미 잡히는 룰은 중복 제안하지 마세요.
+- 도메인 로직 개선과 안전성 위주로 제안하세요.
+- RPA 저장소에서는 좌표/sleep/타이밍 의존성을 명시적으로 지적하세요.
+"""
+
+[github_action_config]
+auto_review = true
+auto_describe = true
+auto_improve = false

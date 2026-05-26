@@ -1,0 +1,19 @@
+rules:
+  - id: java-system-out-println
+    message: System.out.println 대신 SLF4J 등의 logger를 사용하세요.
+    severity: WARNING
+    languages: [java]
+    pattern-either:
+      - pattern: System.out.println(...)
+      - pattern: System.err.println(...)
+    paths:
+      exclude:
+        - '**/test/**'
+
+  - id: java-field-autowired
+    message: '@Autowired field injection 대신 생성자 주입을 사용하세요.'
+    severity: WARNING
+    languages: [java]
+    pattern: |
+      @Autowired
+      $TYPE $NAME;
