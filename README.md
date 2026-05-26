@@ -35,7 +35,7 @@
 | `semgrep/rules/` | 언어별 semgrep 룰 (base + python/go/java/typescript/kubernetes) |
 | `ast-grep/rules/` | 언어별 ast-grep 룰 |
 | `pre-commit/` | pre-commit remote repo로 참조할 hooks |
-| `reviewdog/workflows/` | GitHub reusable workflow (언어 매트릭스 + shellcheck/hadolint/kubeconform) |
+| `.github/workflows/` | GitHub reusable workflow (`reusable-lint.yml` — 언어 매트릭스 + shellcheck/hadolint/kubeconform) |
 | `pr-agent/` | PR-Agent 공유 설정 (한국어 페르소나, 12개 프로젝트 컨텍스트) |
 | `docs/` | 통합/학습/룰 작성 문서 |
 
