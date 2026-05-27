@@ -9,8 +9,8 @@
 | `semgrep/rules/` | 언어별 semgrep 룰 |
 | `ast-grep/rules/` | 언어별 ast-grep 룰 |
 | `pre-commit/` | pre-commit remote repo 호환 hooks |
-| `.github/workflows/` | GitHub reusable workflow (`reusable-lint.yml`) |
-| `pr-agent/` | PR-Agent 페르소나 (한국어) |
+| `.github/workflows/` | GitHub reusable workflow (`reusable-lint.yml`, `reusable-ai-review.yml`) |
+| `pr-agent/` | PR-Agent/Qodo Merge provider profiles + 한국어 리뷰 정책 |
 | `docs/` | 통합/학습/룰 작성 문서 |
 
 ## 지원 언어/도메인
@@ -38,6 +38,20 @@
 ## 빠른 시작
 
 `docs/INTEGRATION.md` 참조.
+
+## AI 리뷰 provider
+
+`reusable-ai-review.yml`은 `ai_provider` 입력으로 Qodo Merge/PR-Agent 모델 provider를 선택합니다.
+
+| `ai_provider` | 용도 | 필요한 secret |
+|---------------|------|---------------|
+| `anthropic` | Claude 계열 기본 프로필 | `ANTHROPIC_API_KEY` |
+| `openai-api` | ChatGPT/OpenAI API key 기반 리뷰 | `OPENAI_KEY` |
+| `gemini` | Google Gemini API 기반 리뷰 | `GEMINI_API_KEY` |
+| `chatgpt-auth` | ChatGPT 웹 세션 방식 | CI 미지원, `openai-api` 사용 권장 |
+
+공통 한국어 리뷰 정책은 `pr-agent/fragments/common-review.toml`, provider별 모델 설정은
+`pr-agent/providers/*.toml`에 둡니다.
 
 ## 버전 정책
 

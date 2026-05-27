@@ -1,0 +1,7 @@
+# Qodo Merge / PR-Agent provider profile.
+# Required secret in reusable workflow: anthropic_key.
+# Exported for Qodo compatibility as ANTHROPIC.KEY and ANTHROPIC_API_KEY.
+
+[config]
+model = "claude-4-sonnet"
+fallback_models = ["claude-4-sonnet"]

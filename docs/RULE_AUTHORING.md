@@ -19,8 +19,12 @@
    - ast-grep: https://ast-grep.github.io/playground.html
    - semgrep: https://semgrep.dev/playground
 2. **테스트 코드 작성**
-   - `tests/positive/` (룰이 잡아야 할 코드)
-   - `tests/negative/` (룰이 잡으면 안 되는 코드)
+   - semgrep positive: `fixtures/semgrep/positive/`
+   - semgrep negative: `fixtures/semgrep/negative/`
+   - ast-grep positive: `fixtures/ast-grep/positive/`
+   - ast-grep negative: `fixtures/ast-grep/negative/`
+   - 일부 룰은 `tests/**` 경로를 제외하므로 fixture는 `fixtures/**`에 둔다.
+   - 실행: `scripts/test-rules.sh`
 3. **PR 생성** (이 리포에)
 4. **severity 정책**
    - 신규 룰: `INFO` 또는 `WARNING`으로 시작

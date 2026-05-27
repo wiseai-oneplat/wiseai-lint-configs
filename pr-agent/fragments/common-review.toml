@@ -1,9 +1,4 @@
-# PR-Agent (qodo-merge) 공유 설정
-# 각 저장소에 복사하거나 git submodule로 참조.
-
 [config]
-model = "claude-4-sonnet"
-fallback_models = ["claude-4-sonnet"]
 language = "ko"
 verbosity_level = 2
 publish_output = true

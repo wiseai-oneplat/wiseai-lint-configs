@@ -1,0 +1,7 @@
+# Qodo Merge / PR-Agent provider profile.
+# Required secret in reusable workflow: openai_key.
+# Exported for Qodo compatibility as OPENAI_KEY and OPENAI__KEY.
+
+[config]
+model = "gpt-5"
+fallback_models = ["gpt-5", "o4-mini"]

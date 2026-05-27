@@ -1,0 +1,44 @@
+name: Shared Config CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install rule engines
+        run: |
+          python3 -m pip install semgrep
+          npm install -g @ast-grep/cli
+
+      - name: Run unit tests
+        run: python3 -m unittest discover -s tests -v
+
+      - name: Compile Python helpers
+        run: python3 -m py_compile scripts/*.py tests/*.py
+
+      - name: Validate YAML files
+        run: |
+          ruby -e "require 'yaml'; Dir['.github/workflows/*.yml','.github/workflows/*.yaml','semgrep/rules/*.yaml','ast-grep/**/*.yml','ast-grep/**/*.yaml','pre-commit/*.yaml'].each { |f| YAML.load_file(f) }; puts 'yaml ok'"
+
+      - name: Test shared rules
+        env:
+          STRICT_RULE_TOOLS: 'true'
+        run: scripts/test-rules.sh

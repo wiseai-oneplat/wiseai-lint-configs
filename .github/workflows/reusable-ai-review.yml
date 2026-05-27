@@ -1,0 +1,87 @@
+# 호출 측 .github/workflows/ai-review.yml에서:
+#
+# jobs:
+#   ai-review:
+#     uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-ai-review.yml@v0.4.1
+#     with:
+#       ai_provider: openai-api   # anthropic | openai-api | gemini | chatgpt-auth | none
+#     secrets:
+#       github_token: ${{ secrets.GITHUB_TOKEN }}
+#       openai_key: ${{ secrets.OPENAI_KEY }}
+
+name: Shared AI Review
+
+on:
+  workflow_call:
+    inputs:
+      ai_provider:
+        description: 'AI review provider: anthropic, openai-api, gemini, chatgpt-auth, none'
+        required: false
+        type: string
+        default: 'anthropic'
+      configs_ref:
+        description: '공유 설정 리포 ref (tag/branch)'
+        required: false
+        type: string
+        default: 'v0.4.1'
+    secrets:
+      github_token:
+        required: true
+      anthropic_key:
+        required: false
+      openai_key:
+        required: false
+      gemini_api_key:
+        required: false
+
+jobs:
+  reject-chatgpt-auth:
+    runs-on: ubuntu-latest
+    if: inputs.ai_provider == 'chatgpt-auth'
+    steps:
+      - name: Reject ChatGPT Auth in CI
+        run: |
+          echo "::error::chatgpt-auth is not supported in GitHub Actions. Use ai_provider=openai-api with OPENAI_KEY instead."
+          exit 1
+
+  ai-review:
+    runs-on: ubuntu-latest
+    if: inputs.ai_provider == 'anthropic' || inputs.ai_provider == 'openai-api' || inputs.ai_provider == 'gemini'
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: wiseai-oneplat/wiseai-lint-configs
+          ref: ${{ inputs.configs_ref }}
+          path: .lint-configs
+
+      - name: Assemble PR-Agent configuration
+        run: |
+          provider_path=".lint-configs/pr-agent/providers/${{ inputs.ai_provider }}.toml"
+          common_path=".lint-configs/pr-agent/fragments/common-review.toml"
+
+          if [ ! -f "$provider_path" ]; then
+            echo "::error::Unknown ai_provider '${{ inputs.ai_provider }}'"
+            exit 1
+          fi
+
+          python3 .lint-configs/scripts/assemble-pr-agent-config.py \
+            --provider "$provider_path" \
+            --common "$common_path" \
+            --output .pr_agent.toml
+
+      - name: Run Qodo Merge
+        uses: qodo-ai/pr-agent@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.github_token }}
+          OPENAI_KEY: ${{ secrets.openai_key }}
+          OPENAI__KEY: ${{ secrets.openai_key }}
+          ANTHROPIC_API_KEY: ${{ secrets.anthropic_key }}
+          ANTHROPIC.KEY: ${{ secrets.anthropic_key }}
+          GEMINI_API_KEY: ${{ secrets.gemini_api_key }}
+          GOOGLE_AI_STUDIO.GEMINI_API_KEY: ${{ secrets.gemini_api_key }}

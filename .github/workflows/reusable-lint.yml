@@ -2,12 +2,11 @@
 #
 # jobs:
 #   lint:
-#     uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.4.0
+#     uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.4.1
 #     with:
-#       languages: 'python,go'   # 쉼표 구분
-#                                # 옵션: python, go, java, typescript, javascript, vue,
-#                                #       c, cpp, css, shell, dockerfile, terraform,
-#                                #       kubernetes, helm, yaml
+#       languages: 'python,go'
+#       lint_mode: advisory
+#       reporter_mode: github-pr-review
 #     secrets:
 #       reviewdog_token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -25,9 +24,34 @@ on:
         required: false
         type: string
         default: 'v0.4.1'
+      reporter_mode:
+        description: 'reviewdog reporter mode'
+        required: false
+        type: string
+        default: 'github-pr-review'
+      reviewdog_level:
+        description: 'reviewdog comment level'
+        required: false
+        type: string
+        default: 'warning'
+      lint_mode:
+        description: 'advisory 또는 blocking'
+        required: false
+        type: string
+        default: 'advisory'
+      fail_on_error:
+        description: 'true면 lint_mode와 무관하게 reviewdog error에서 실패'
+        required: false
+        type: boolean
+        default: false
     secrets:
       reviewdog_token:
         required: true
+
+env:
+  REVIEWDOG_REPORTER: ${{ inputs.reporter_mode }}
+  REVIEWDOG_LEVEL: ${{ inputs.reviewdog_level }}
+  REVIEWDOG_FAIL_ON_ERROR: ${{ inputs.fail_on_error || inputs.lint_mode == 'blocking' }}
 
 jobs:
   semgrep:
@@ -43,10 +67,12 @@ jobs:
       - uses: reviewdog/action-setup@v1
       - run: pip install semgrep
       - name: Run semgrep
-        continue-on-error: true
+        continue-on-error: ${{ inputs.lint_mode == 'advisory' && inputs.fail_on_error == false }}
         run: |
-          semgrep --config .lint-configs/semgrep/rules/ --sarif --no-error > semgrep.sarif || true
-          cat semgrep.sarif | reviewdog -f=sarif -name=semgrep -reporter=github-pr-review -level=warning -fail-on-error=false
+          semgrep --metrics off --config .lint-configs/semgrep/rules/ --sarif --no-error > semgrep.sarif || true
+          cat semgrep.sarif | reviewdog -f=sarif -name=semgrep \
+            -reporter="${REVIEWDOG_REPORTER}" -level="${REVIEWDOG_LEVEL}" \
+            -fail-on-error="${REVIEWDOG_FAIL_ON_ERROR}"
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.reviewdog_token }}
 
@@ -61,7 +87,7 @@ jobs:
           ref: ${{ inputs.configs_ref }}
           path: .lint-configs
       - uses: ast-grep/action@v1
-        continue-on-error: true
+        continue-on-error: ${{ inputs.lint_mode == 'advisory' && inputs.fail_on_error == false }}
         with:
           config: .lint-configs/ast-grep/sgconfig.yml
 
@@ -73,8 +99,9 @@ jobs:
       - uses: reviewdog/action-shellcheck@v1
         with:
           github_token: ${{ secrets.reviewdog_token }}
-          reporter: github-pr-review
-          level: warning
+          reporter: ${{ inputs.reporter_mode }}
+          level: ${{ inputs.reviewdog_level }}
+          fail_on_error: ${{ inputs.fail_on_error || inputs.lint_mode == 'blocking' }}
 
   hadolint:
     runs-on: ubuntu-latest
@@ -84,7 +111,9 @@ jobs:
       - uses: reviewdog/action-hadolint@v1
         with:
           github_token: ${{ secrets.reviewdog_token }}
-          reporter: github-pr-review
+          reporter: ${{ inputs.reporter_mode }}
+          level: ${{ inputs.reviewdog_level }}
+          fail_on_error: ${{ inputs.fail_on_error || inputs.lint_mode == 'blocking' }}
 
   cppcheck:
     runs-on: ubuntu-latest
@@ -95,12 +124,13 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y cppcheck
       - uses: reviewdog/action-setup@v1
       - name: Run cppcheck
-        continue-on-error: true
+        continue-on-error: ${{ inputs.lint_mode == 'advisory' && inputs.fail_on_error == false }}
         run: |
           cppcheck --enable=warning,style,performance --inline-suppr --quiet \
             --template='{file}:{line}:{column}: {severity}: {message}' . 2> cppcheck.out || true
           cat cppcheck.out | reviewdog -efm="%f:%l:%c: %t%*[^:]: %m" -name=cppcheck \
-            -reporter=github-pr-review -level=warning -fail-on-error=false
+            -reporter="${REVIEWDOG_REPORTER}" -level="${REVIEWDOG_LEVEL}" \
+            -fail-on-error="${REVIEWDOG_FAIL_ON_ERROR}"
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.reviewdog_token }}
 
@@ -116,11 +146,12 @@ jobs:
         run: npm install -g stylelint stylelint-config-standard
       - uses: reviewdog/action-setup@v1
       - name: Run stylelint
-        continue-on-error: true
+        continue-on-error: ${{ inputs.lint_mode == 'advisory' && inputs.fail_on_error == false }}
         run: |
           npx stylelint "**/*.{css,scss,sass,less}" --formatter compact > stylelint.out || true
           cat stylelint.out | reviewdog -efm="%f: line %l, col %c, %t%*[^-]- %m" \
-            -name=stylelint -reporter=github-pr-review -level=warning -fail-on-error=false
+            -name=stylelint -reporter="${REVIEWDOG_REPORTER}" -level="${REVIEWDOG_LEVEL}" \
+            -fail-on-error="${REVIEWDOG_FAIL_ON_ERROR}"
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.reviewdog_token }}
 
@@ -132,8 +163,9 @@ jobs:
       - uses: reviewdog/action-yamllint@v1
         with:
           github_token: ${{ secrets.reviewdog_token }}
-          reporter: github-pr-review
-          level: warning
+          reporter: ${{ inputs.reporter_mode }}
+          level: ${{ inputs.reviewdog_level }}
+          fail_on_error: ${{ inputs.fail_on_error || inputs.lint_mode == 'blocking' }}
 
   tfsec:
     runs-on: ubuntu-latest
@@ -143,8 +175,9 @@ jobs:
       - uses: reviewdog/action-tfsec@v1
         with:
           github_token: ${{ secrets.reviewdog_token }}
-          reporter: github-pr-review
-          level: warning
+          reporter: ${{ inputs.reporter_mode }}
+          level: ${{ inputs.reviewdog_level }}
+          fail_on_error: ${{ inputs.fail_on_error || inputs.lint_mode == 'blocking' }}
 
   helm-lint:
     runs-on: ubuntu-latest
@@ -153,13 +186,22 @@ jobs:
       - uses: actions/checkout@v4
       - uses: azure/setup-helm@v4
       - name: Run helm lint
-        continue-on-error: true
+        continue-on-error: ${{ inputs.lint_mode == 'advisory' && inputs.fail_on_error == false }}
         run: |
-          find . -name 'Chart.yaml' -print0 | while IFS= read -r -d '' chart; do
+          : > helm-lint.out
+          failed=0
+          while IFS= read -r -d '' chart; do
             dir=$(dirname "$chart")
-            echo "Linting $dir"
-            helm lint "$dir" || true
-          done
+            echo "Linting $dir" | tee -a helm-lint.out
+            helm lint "$dir" 2>&1 | tee -a helm-lint.out || failed=1
+          done < <(find . -name 'Chart.yaml' -print0)
+          {
+            echo "### helm lint"
+            cat helm-lint.out
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$REVIEWDOG_FAIL_ON_ERROR" = "true" ] && [ "$failed" -ne 0 ]; then
+            exit 1
+          fi
 
   kubeconform:
     runs-on: ubuntu-latest
@@ -171,7 +213,19 @@ jobs:
           curl -sL https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz | tar xz
           sudo mv kubeconform /usr/local/bin/
       - name: Validate manifests
-        continue-on-error: true
+        continue-on-error: ${{ inputs.lint_mode == 'advisory' && inputs.fail_on_error == false }}
         run: |
-          find . \( -path '*/manifest/*.yaml' -o -path '*/templates/*.yaml' \) -print0 \
-            | xargs -0 kubeconform -summary -strict || true
+          mapfile -d '' manifests < <(find . \( -path '*/manifest/*.yaml' -o -path '*/templates/*.yaml' \) -print0)
+          status=0
+          if [ "${#manifests[@]}" -eq 0 ]; then
+            echo "No Kubernetes manifests found" | tee kubeconform.out
+          else
+            kubeconform -summary -strict "${manifests[@]}" 2>&1 | tee kubeconform.out || status=$?
+          fi
+          {
+            echo "### kubeconform"
+            cat kubeconform.out
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$REVIEWDOG_FAIL_ON_ERROR" = "true" ] && [ "$status" -ne 0 ]; then
+            exit "$status"
+          fi
