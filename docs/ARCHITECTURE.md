@@ -74,10 +74,10 @@ wiseai-oneplat 조직 12개 저장소에 적용되는 코드 분석 + AI 리뷰 
 
 ```
 wiseai-oneplat/wiseai-lint-configs
-    │ git tag v0.1.0
+    │ git tag v0.2.0
     ▼
 각 저장소 .github/workflows/lint.yml
-    │ uses: .../reusable-lint.yml@v0.1.0
+    │ uses: .../reusable-lint.yml@v0.2.0
     ▼
 GitHub Action runner
     │ checkout 저장소 + 공유 lint-configs
