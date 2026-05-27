@@ -53,6 +53,15 @@
 공통 한국어 리뷰 정책은 `pr-agent/fragments/common-review.toml`, provider별 모델 설정은
 `pr-agent/providers/*.toml`에 둡니다.
 
+## 검증 및 운영 모드
+
+- 룰 변경 전후에는 `scripts/test-rules.sh`로 semgrep/ast-grep fixture를 검증합니다.
+- GitHub Actions 자체 검증은 `.github/workflows/ci.yml`에서 reusable workflow 계약, provider 설정,
+  룰 fixture를 함께 확인합니다.
+- `reusable-lint.yml`은 기본적으로 `lint_mode: advisory`로 PR 코멘트/요약만 남깁니다.
+  머지 차단이 필요한 저장소는 `lint_mode: blocking` 또는 `fail_on_error: true`를 명시합니다.
+- reviewdog 출력 방식은 `reporter_mode`, 코멘트 severity는 `reviewdog_level`로 조정합니다.
+
 ## 버전 정책
 
 - `main`은 항상 안정. 모든 호출 측은 git tag (`v0.x.y`)로 참조.

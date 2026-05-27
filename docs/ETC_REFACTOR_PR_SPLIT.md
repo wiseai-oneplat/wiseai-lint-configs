@@ -1,5 +1,9 @@
 # ETC Refactor PR Split
 
+P0-P3 refactor scope has landed separately: provider selection now lives behind
+`reusable-ai-review.yml`, rule validation uses `scripts/test-rules.sh`, and lint reporting/blocking
+is controlled by reusable workflow inputs. The items below are ETC follow-up PRs.
+
 Do not bundle these with the provider, CI harness, reporting, or blocking-mode changes. Each PR
 should be independently reviewable, reversible, and releasable.
 

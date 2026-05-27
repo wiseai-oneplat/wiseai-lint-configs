@@ -122,7 +122,7 @@ with:
 ```yaml
 repos:
   - repo: https://github.com/wiseai-oneplat/wiseai-lint-configs
-    rev: v0.4.0
+    rev: v0.4.1
     hooks:
       - id: semgrep-shared
       - id: ast-grep-shared
@@ -169,9 +169,22 @@ jobs:
 `chatgpt-auth`는 ChatGPT 웹 세션/쿠키 기반 인증을 의미하므로 GitHub Actions에서는 지원하지 않습니다.
 CI에서는 `openai-api`와 `OPENAI_KEY`를 사용하세요.
 
+## 로컬/공유 룰 검증
+
+공유 룰을 수정하거나 호출 측에 적용 전 smoke test를 돌릴 때는 이 리포에서 다음을 실행합니다.
+
+```bash
+scripts/test-rules.sh
+```
+
+이 스크립트는 `fixtures/semgrep/positive`, `fixtures/semgrep/negative`,
+`fixtures/ast-grep/positive`, `fixtures/ast-grep/negative`를 기준으로 룰의 기대 finding과
+false positive를 확인합니다. 로컬에 semgrep 또는 ast-grep이 없으면 해당 도구 검증은 skip됩니다.
+
 ## 통합 검증 체크리스트
 
 각 저장소 통합 후 확인:
+- [ ] 공유 룰 수정 시 `scripts/test-rules.sh` 통과
 - [ ] PR 생성 시 reviewdog 코멘트 출현 (PR diff 내 위반 시)
 - [ ] 의도된 위반에 대한 코멘트 정확성
 - [ ] False-positive 비율 < 10%

@@ -30,6 +30,11 @@
 - 이 리포의 `ast-grep/rules/<lang>/`의 기존 룰을 복사·수정.
 - 자신의 저장소에서 실행: `sg scan --config <path>/ast-grep/sgconfig.yml`
 - 결과 검토, false positive 분석.
+- 이 리포에 룰을 추가할 때는 fixture를 먼저 둔다:
+  - positive: `fixtures/ast-grep/positive/`
+  - negative: `fixtures/ast-grep/negative/`
+- 로컬 검증은 `scripts/test-rules.sh`로 실행한다. ast-grep이 설치되어 있으면 positive fixture에서
+  기대 finding을 확인하고, negative fixture에서 false positive가 없는지 확인한다.
 
 ### S3. 도메인 특화 룰 작성 (반나절)
 - 작성 후보 (자신의 도메인 특성에 맞춰):
@@ -50,6 +55,10 @@
 - **semgrep**: taint 분석, dataflow, 복잡한 패턴 조합. 보안 룰에 강함.
 - **ast-grep**: 구조 일치 + 빠른 fix. 안티패턴 자동 수정에 강함.
 - `RULE_AUTHORING.md`의 결정 트리 참고.
+- semgrep 룰도 동일하게 fixture를 둔다:
+  - positive: `fixtures/semgrep/positive/`
+  - negative: `fixtures/semgrep/negative/`
+  - 실행: `scripts/test-rules.sh`
 
 ## 학습 자료
 

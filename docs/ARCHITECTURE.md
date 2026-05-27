@@ -39,11 +39,12 @@
             ▼
 ┌─────────────────────────────────────────────────────────┐
 │ TIER 3: AI 리뷰 (~1-3min, 옵션)                         │
-│   PR-Agent (qodo-merge):                                │
+│   reusable-ai-review.yml + PR-Agent (qodo-merge):        │
+│    ai_provider: anthropic | openai-api | gemini | none   │
 │    /review   — 변경 요약 + 점수 + 보안 평가             │
 │    /describe — PR 본문 보강                             │
 │    /improve  — 코드 개선 제안                           │
-│  공유 .pr_agent.toml에 한국어 페르소나 + 일반 가이드     │
+│  provider profile + common-review.toml 조립              │
 └─────────────────────────────────────────────────────────┘
             │
             ▼
@@ -58,10 +59,11 @@
 
 ```
 공유 lint-configs 리포 (public)
-    │ git tag v0.4.0
+    │ git tag v0.4.1
     ▼
 호출 측 .github/workflows/lint.yml
-    │ uses: .../reusable-lint.yml@v0.4.0
+    │ uses: .../reusable-lint.yml@v0.4.1
+    │ inputs: languages, reporter_mode, reviewdog_level, lint_mode, fail_on_error
     ▼
 GitHub Action runner
     │ checkout 대상 저장소 + 공유 lint-configs
@@ -73,19 +75,42 @@ reviewdog
     │ PR diff와 매칭하여 inline 코멘트 변환
     ▼
 GitHub PR
-    │ (Tier 3) PR-Agent가 추가 리뷰 (옵션)
+    │ (Tier 3) reusable-ai-review.yml이 ai_provider별 PR-Agent 리뷰 수행 (옵션)
     ▼
 머지 결정
+```
+
+## 자체 검증 흐름
+
+```
+룰/워크플로우 변경
+    │
+    ├─ scripts/test-rules.sh
+    │    ├─ fixtures/semgrep/positive, fixtures/semgrep/negative
+    │    └─ fixtures/ast-grep/positive, fixtures/ast-grep/negative
+    │
+    ├─ python3 -m unittest discover -s tests -v
+    │    ├─ reusable workflow 계약
+    │    ├─ provider config 조립
+    │    └─ reporting/blocking 정책
+    │
+    └─ .github/workflows/ci.yml
+         └─ 위 검증을 PR/push에서 재실행
 ```
 
 ## 보안 모델
 
 - **시크릿 노출 방지**:
-  - `ANTHROPIC_API_KEY` → 호출 측 저장소 GitHub Secrets 전용
+  - `ANTHROPIC_API_KEY` → Anthropic provider 사용 저장소의 GitHub Secrets 전용
+  - `OPENAI_KEY` → `ai_provider: openai-api` 사용 저장소의 GitHub Secrets 전용
+  - `GEMINI_API_KEY` → `ai_provider: gemini` 사용 저장소의 GitHub Secrets 전용
   - 공유 리포에는 시크릿 zero
 - **권한 최소화**:
   - PR-Agent: PR comment 권한만, merge 불가
   - reviewdog: 동일
+- **인증 경계**:
+  - GitHub Actions에서는 API key 기반 provider만 지원
+  - ChatGPT 웹 세션/Auth 방식은 재현성·보안 문제로 reusable workflow에서 차단
 - **공급망 방어**:
   - 공유 리포는 tag 기반 참조 (`@v0.x.y`), branch 참조 금지
   - 외부 action은 가능하면 SHA 핀
@@ -96,6 +121,7 @@ GitHub PR
 - 호출 측은 자기 페이스로 업그레이드 (`ref:` 라인만 수정)
 - 룰 1개가 false positive 폭발 시 → patch 릴리스
 - 긴급 시 호출 측 ref를 이전 tag로 되돌리면 즉시 롤백
+- 기본 lint 운영은 `lint_mode: advisory`; 저장소별 준비도에 따라 `lint_mode: blocking`으로 승격
 
 ## 향후 확장 후보
 
