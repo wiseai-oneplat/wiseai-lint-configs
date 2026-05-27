@@ -1,4 +1,4 @@
-# PR-Agent (qodo-merge) 공유 설정 — wiseai-oneplat 조직 전체
+# PR-Agent (qodo-merge) 공유 설정
 # 각 저장소에 복사하거나 git submodule로 참조.
 
 [config]
@@ -16,30 +16,23 @@ require_security_review = true
 require_focused_review = false
 num_code_suggestions = 4
 extra_instructions = """
-wiseai-oneplat 조직 컨텍스트:
+한국어로 리뷰하세요.
 
-[애플리케이션]
-- voxBridge: LiveKit 기반 실시간 음성. WebSocket/스트리밍 안전성, latency budget 점검.
-- wiseai-aiu: Spring DDD. 도메인 경계 침범 / Anemic Model 패턴 점검.
-- wiseai-emr-pipeline: EMR 데이터 파이프라인 (Go). 멱등성, 재시도, 백프레셔 점검.
-- inbound-project / outbound-project: 콜 에이전트 (Python). LLM 비용/타임아웃/fallback model 누락 점검.
-- service-planning-agent: 에이전트 흐름. 프롬프트/툴 사용 변경 시 회귀 위험 점검.
+[공통 점검 사항]
+- 시크릿/PII 하드코딩 (API key, 토큰, 비밀번호, 주민번호, 의료기록 등) 여부
+- 의료법/개인정보 관련 컴플라이언스 (한국 의료 도메인 코드인 경우)
+- 외부 호출/결제/예약 변경 시 idempotency key 유무
+- 비동기 안전성: context 전파, race condition, goroutine/Promise leak
+- 타임아웃·재시도·백오프 정책 누락
+- 트랜잭션 경계 침범, RuntimeException 무시
+- 컨테이너 이미지에 latest 태그, privileged: true, hostNetwork: true 등 위험 설정
 
-[RPA]
-- wiseai-rpa-dental / wiseai-rpa-medical: Windows 자동화. 의료기관별 변형 분기, 좌표/타이밍 의존성 점검.
-
-[인프라]
-- livekit-inbound: SIP/EKS 결합부. 보안 그룹/포트 변경 시 영향 점검.
-- infra: NCP/EKS manifest + Shell. 시크릿/RBAC/imagePullPolicy 점검.
-- wiseai-helm-charts: 차트 변경 시 호환성 (values schema, 기본값 변경) 점검.
-- homebrew-tools: 사내 CLI. 설치 스크립트 안전성 점검.
-
-[조직 공통 점검]
-- 시크릿/PII 하드코딩 여부.
-- 의료법/개인정보 컴플라이언스 (한국 의료 EMR 도메인).
-- idempotency_key 누락 (외부 호출/예약/결제 시 필수).
-- 비동기 안전성 (context 전파, race condition, goroutine leak).
-- 이미지 태그 latest 사용 금지.
+[리뷰 톤]
+- 결정적인 버그/보안 위협은 ERROR로 명확히
+- 스타일/가독성은 SUGGESTION으로 부드럽게
+- 표준 린터(ruff, mypy, golangci-lint, biome, SpotBugs, shellcheck, hadolint, tfsec, kubeconform)로
+  이미 잡히는 룰은 중복 제안 금지
+- 도메인 로직 개선과 안전성 위주로 제안
 """
 
 [pr_description]
@@ -50,9 +43,11 @@ publish_labels = true
 [pr_code_suggestions]
 num_code_suggestions = 4
 extra_instructions = """
-- ruff/mypy/golangci-lint/biome/SpotBugs/shellcheck/hadolint으로 이미 잡히는 룰은 중복 제안하지 마세요.
-- 도메인 로직 개선과 안전성 위주로 제안하세요.
-- RPA 저장소에서는 좌표/sleep/타이밍 의존성을 명시적으로 지적하세요.
+- 표준 린터가 잡는 항목은 중복 제안 금지
+- 비즈니스 로직 개선·안전성 위주
+- C/C++ 코드에서는 메모리 안전성, 포인터, undefined behavior에 우선 주목
+- 프론트엔드 코드에서는 접근성, 성능 (re-render, large payload) 에 주목
+- 인프라 코드(Terraform/K8s/Helm)에서는 권한/네트워크/시크릿 노출에 주목
 """
 
 [github_action_config]

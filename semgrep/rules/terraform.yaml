@@ -1,0 +1,18 @@
+rules:
+  - id: terraform-public-s3
+    message: S3 버킷 ACL이 public-read 또는 public-read-write입니다. 의도되지 않았다면 private으로 변경하세요.
+    severity: ERROR
+    languages: [hcl]
+    pattern-regex: 'acl\s*=\s*"public-read(-write)?"'
+
+  - id: terraform-missing-tags
+    message: 리소스에 tags가 누락되었습니다. 비용 추적과 거버넌스를 위해 표준 태그를 추가하세요.
+    severity: INFO
+    languages: [hcl]
+    pattern: |
+      resource "$TYPE" "$NAME" {
+        ...
+      }
+    paths:
+      include:
+        - '**/*.tf'

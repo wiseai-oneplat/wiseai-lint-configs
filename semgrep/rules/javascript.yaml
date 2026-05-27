@@ -1,0 +1,19 @@
+rules:
+  - id: javascript-eval-usage
+    message: eval() 사용은 코드 인젝션 위험이 있어 금지합니다. JSON.parse 또는 명시적 파서를 사용하세요.
+    severity: ERROR
+    languages: [javascript]
+    pattern-either:
+      - pattern: eval(...)
+      - pattern: Function(...)
+    paths:
+      exclude:
+        - tests/
+        - '**/*.test.js'
+        - '**/*.spec.js'
+
+  - id: javascript-document-write
+    message: document.write는 XSS 위험과 성능 이슈가 있습니다. 안전한 DOM API 사용을 권장합니다.
+    severity: WARNING
+    languages: [javascript]
+    pattern: document.write(...)

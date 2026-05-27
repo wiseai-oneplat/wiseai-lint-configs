@@ -7,13 +7,15 @@
 ├── 단순 패턴 매칭 + 자동 수정 → ast-grep
 ├── 복잡한 dataflow / taint 분석 → semgrep
 ├── 통계/그래프 분석 → 직접 tree-sitter 스크립트
-├── Shell/Dockerfile/K8s YAML → 전용 린터 (shellcheck/hadolint/kubeconform)
-└── 언어별 표준 룰 (스타일/타입) → 기존 린터(ruff/golangci-lint/biome)
+├── Shell/Dockerfile/CSS/Terraform/Helm/YAML/K8s → 전용 린터
+│   (shellcheck/hadolint/stylelint/tfsec/helm lint/yamllint/kubeconform)
+├── C/C++ 메모리/포인터 분석 → cppcheck (또는 clang-tidy)
+└── 언어별 표준 룰 (스타일/타입) → 각 저장소의 표준 린터
 ```
 
 ## 워크플로우
 
-1. **playground에서 검증** (반드시 먼저)
+1. **playground에서 검증** (먼저)
    - ast-grep: https://ast-grep.github.io/playground.html
    - semgrep: https://semgrep.dev/playground
 2. **테스트 코드 작성**
@@ -23,14 +25,14 @@
 4. **severity 정책**
    - 신규 룰: `INFO` 또는 `WARNING`으로 시작
    - 1주 관찰 후 false positive 비율 < 5%면 `ERROR` 승격
-5. **버전 태그 후 각 저장소에 전파**
+5. **버전 태그 후 호출 측에 전파**
 
 ## 작성 체크리스트
 
 - [ ] `id`는 kebab-case (예: `python-naive-datetime`)
-- [ ] `message`는 한국어로, **무엇을 어떻게 바꾸라**고 명시
+- [ ] `message`는 한국어, **무엇을 어떻게 바꾸라**고 명시
 - [ ] `paths.exclude` 또는 `ignores`에 테스트/스크립트 제외
-- [ ] `severity`는 신중하게 (`ERROR`는 머지 차단)
+- [ ] `severity`는 신중하게 (`ERROR`는 머지 차단 가능)
 - [ ] false positive 시나리오 최소 3개 검증
 - [ ] 가능하면 `fix` 또는 `autofix` 제공
 
@@ -47,11 +49,11 @@
 ## 룰 비활성화 절차
 
 특정 룰이 false positive 폭발 시:
-1. 해당 룰 파일 상단에 주석으로 `# DISABLED YYYY-MM-DD: 사유`
+1. 룰 파일 상단에 주석 `# DISABLED YYYY-MM-DD: 사유`
 2. 룰 정의의 `severity: OFF` 또는 파일 자체를 임시 rename (`.yaml.disabled`)
 3. 트래킹 이슈 생성 → 수정 후 재활성화
 
-## 룰 카탈로그 (v0.3.1)
+## 룰 카탈로그 (v0.4.0)
 
 | ID | 도구 | 언어/도메인 | severity |
 |----|------|------------|----------|
@@ -63,25 +65,27 @@
 | go-context-background-in-handler | semgrep | go | WARNING |
 | java-system-out-println | semgrep | java | WARNING |
 | java-field-autowired | semgrep | java | WARNING |
-| typescript-console-log | semgrep | typescript | WARNING |
+| typescript-console-log | semgrep | typescript/javascript | WARNING |
 | typescript-as-any | semgrep | typescript | WARNING |
+| javascript-eval-usage | semgrep | javascript | ERROR |
+| c-gets-unsafe | semgrep | c | ERROR |
+| cpp-using-namespace-std-in-header | semgrep | cpp | WARNING |
+| terraform-public-s3 | semgrep | terraform | ERROR |
 | k8s-image-tag-latest | semgrep | kubernetes | ERROR |
 | k8s-missing-resource-limits | semgrep | kubernetes | WARNING |
 | k8s-runAsNonRoot-missing | semgrep | kubernetes | WARNING |
+| k8s-privileged-true | semgrep | kubernetes | ERROR |
+| k8s-hostnetwork-true | semgrep | kubernetes | ERROR |
 | no-print | ast-grep | python | warning |
 | no-panic | ast-grep | go | error |
 | no-system-out | ast-grep | java | warning |
-| no-console | ast-grep | typescript | warning |
+| no-console | ast-grep | typescript/javascript | warning |
 
 룰 추가/제거 시 이 표를 업데이트할 것.
 
-## 도메인별 룰 작성 우선순위 (제안)
+## 룰 작성 일반 가이드
 
-| 도메인 | 우선 룰 |
-|--------|--------|
-| voxBridge (음성) | WebSocket auth 누락, LiveKit room 생성 시 권한 검증, 스트림 close 누락 |
-| wiseai-emr-pipeline | idempotency_key 누락, retry 정책 누락, 백프레셔 부재 |
-| inbound/outbound | LLM API 호출에 timeout 미설정, fallback model 미설정 |
-| wiseai-aiu | @Transactional + RuntimeException catch (롤백 안 됨), N+1 패턴 |
-| infra/helm | hostNetwork: true, privileged: true, imagePullPolicy: Always 누락 |
-| RPA | 좌표 하드코딩, sleep(상수) (대신 element wait) |
+- **언어별 표준 도구로 잡히는 룰은 만들지 않기**: ruff/golangci-lint/biome가 이미 잡는 룰을 semgrep에 중복 작성하면 노이즈.
+- **도메인 룰에 집중**: 비즈니스 규칙, 안전성, 보안, 도메인 invariants 위주.
+- **autofix 가능하면 제공**: ast-grep의 `fix:` 필드 활용 → 개발자 부담 감소.
+- **부정 경로 명시**: `pattern-not` / `ignores`로 false positive를 사전 차단.

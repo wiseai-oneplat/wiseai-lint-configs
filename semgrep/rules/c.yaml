@@ -1,0 +1,18 @@
+rules:
+  - id: c-gets-unsafe
+    message: gets()는 버퍼 오버플로우 위험이 있어 금지됩니다. fgets() 또는 getline() 사용.
+    severity: ERROR
+    languages: [c]
+    pattern: gets($BUF)
+
+  - id: c-strcpy-unsafe
+    message: strcpy 사용 시 버퍼 오버플로우 위험. strncpy 또는 strlcpy 사용 권장.
+    severity: WARNING
+    languages: [c]
+    pattern: strcpy($DST, $SRC)
+
+  - id: c-sprintf-unsafe
+    message: sprintf 대신 snprintf 사용. 버퍼 크기 한계 명시 필수.
+    severity: WARNING
+    languages: [c]
+    pattern: sprintf($BUF, ...)

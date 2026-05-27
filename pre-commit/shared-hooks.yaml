@@ -1,15 +1,16 @@
 # pre-commit remote repo로 참조 가능한 hooks
-# 각 저장소의 .pre-commit-config.yaml에서:
+# 호출 측 .pre-commit-config.yaml 예시:
 #   - repo: https://github.com/wiseai-oneplat/wiseai-lint-configs
-#     rev: v0.3.1
+#     rev: v0.4.0
 #     hooks:
 #       - id: semgrep-shared
 #       - id: ast-grep-shared
-#       - id: shellcheck-shared       # *.sh가 있는 저장소만
-#       - id: hadolint-shared         # Dockerfile이 있는 저장소만
+#       - id: shellcheck-shared      # *.sh가 있는 저장소만
+#       - id: hadolint-shared        # Dockerfile이 있는 저장소만
+#       - id: yamllint-shared        # YAML 검사 원할 시
 
 - id: semgrep-shared
-  name: WiseAI shared semgrep rules
+  name: shared semgrep rules
   entry: semgrep --config semgrep/rules/ --error --strict
   language: python
   additional_dependencies: ['semgrep>=1.50.0']
@@ -17,20 +18,27 @@
   types: [text]
 
 - id: ast-grep-shared
-  name: WiseAI shared ast-grep rules
+  name: shared ast-grep rules
   entry: sg scan --config ast-grep/sgconfig.yml
   language: system
   pass_filenames: false
   types: [text]
 
 - id: shellcheck-shared
-  name: shellcheck (wiseai shared)
+  name: shellcheck (shared)
   entry: shellcheck
   language: system
   types: [shell]
 
 - id: hadolint-shared
-  name: hadolint (wiseai shared)
+  name: hadolint (shared)
   entry: hadolint
   language: system
   files: 'Dockerfile.*$'
+
+- id: yamllint-shared
+  name: yamllint (shared)
+  entry: yamllint
+  language: python
+  additional_dependencies: ['yamllint']
+  types: [yaml]

@@ -1,14 +1,15 @@
-# 각 저장소의 .github/workflows/lint.yml에서 호출:
+# 호출 측 .github/workflows/lint.yml에서:
 #
 # jobs:
 #   lint:
-#     uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.3.1
+#     uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.4.0
 #     with:
-#       languages: 'python,go'    # 쉼표 구분, 옵션: python,go,java,typescript,shell,dockerfile,kubernetes,helm
+#       languages: 'python,go'   # 쉼표 구분
+#                                # 옵션: python, go, java, typescript, javascript, vue,
+#                                #       c, cpp, css, shell, dockerfile, terraform,
+#                                #       kubernetes, helm, yaml
 #     secrets:
 #       reviewdog_token: ${{ secrets.GITHUB_TOKEN }}
-#
-# 이 리포가 public이므로 별도 PAT 불필요.
 
 name: Shared Lint
 
@@ -23,7 +24,7 @@ on:
         description: '공유 설정 리포 ref (tag/branch)'
         required: false
         type: string
-        default: 'v0.3.1'
+        default: 'v0.4.0'
     secrets:
       reviewdog_token:
         required: true
@@ -31,6 +32,7 @@ on:
 jobs:
   semgrep:
     runs-on: ubuntu-latest
+    if: contains(inputs.languages, 'python') || contains(inputs.languages, 'go') || contains(inputs.languages, 'java') || contains(inputs.languages, 'typescript') || contains(inputs.languages, 'javascript') || contains(inputs.languages, 'c') || contains(inputs.languages, 'cpp') || contains(inputs.languages, 'terraform') || contains(inputs.languages, 'kubernetes') || contains(inputs.languages, 'helm')
     steps:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
@@ -50,7 +52,7 @@ jobs:
 
   ast-grep:
     runs-on: ubuntu-latest
-    if: contains(inputs.languages, 'python') || contains(inputs.languages, 'go') || contains(inputs.languages, 'java') || contains(inputs.languages, 'typescript')
+    if: contains(inputs.languages, 'python') || contains(inputs.languages, 'go') || contains(inputs.languages, 'java') || contains(inputs.languages, 'typescript') || contains(inputs.languages, 'javascript') || contains(inputs.languages, 'vue') || contains(inputs.languages, 'c') || contains(inputs.languages, 'cpp') || contains(inputs.languages, 'css')
     steps:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
@@ -84,6 +86,81 @@ jobs:
           github_token: ${{ secrets.reviewdog_token }}
           reporter: github-pr-review
 
+  cppcheck:
+    runs-on: ubuntu-latest
+    if: contains(inputs.languages, 'c') || contains(inputs.languages, 'cpp')
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install cppcheck
+        run: sudo apt-get update && sudo apt-get install -y cppcheck
+      - uses: reviewdog/action-setup@v1
+      - name: Run cppcheck
+        continue-on-error: true
+        run: |
+          cppcheck --enable=warning,style,performance --inline-suppr --quiet \
+            --template='{file}:{line}:{column}: {severity}: {message}' . 2> cppcheck.out || true
+          cat cppcheck.out | reviewdog -efm="%f:%l:%c: %t%*[^:]: %m" -name=cppcheck \
+            -reporter=github-pr-review -level=warning -fail-on-error=false
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.reviewdog_token }}
+
+  stylelint:
+    runs-on: ubuntu-latest
+    if: contains(inputs.languages, 'css')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install stylelint
+        run: npm install -g stylelint stylelint-config-standard
+      - uses: reviewdog/action-setup@v1
+      - name: Run stylelint
+        continue-on-error: true
+        run: |
+          npx stylelint "**/*.{css,scss,sass,less}" --formatter compact > stylelint.out || true
+          cat stylelint.out | reviewdog -efm="%f: line %l, col %c, %t%*[^-]- %m" \
+            -name=stylelint -reporter=github-pr-review -level=warning -fail-on-error=false
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.reviewdog_token }}
+
+  yamllint:
+    runs-on: ubuntu-latest
+    if: contains(inputs.languages, 'yaml')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: reviewdog/action-yamllint@v1
+        with:
+          github_token: ${{ secrets.reviewdog_token }}
+          reporter: github-pr-review
+          level: warning
+
+  tfsec:
+    runs-on: ubuntu-latest
+    if: contains(inputs.languages, 'terraform')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: reviewdog/action-tfsec@v1
+        with:
+          github_token: ${{ secrets.reviewdog_token }}
+          reporter: github-pr-review
+          level: warning
+
+  helm-lint:
+    runs-on: ubuntu-latest
+    if: contains(inputs.languages, 'helm')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+      - name: Run helm lint
+        continue-on-error: true
+        run: |
+          find . -name 'Chart.yaml' -print0 | while IFS= read -r -d '' chart; do
+            dir=$(dirname "$chart")
+            echo "Linting $dir"
+            helm lint "$dir" || true
+          done
+
   kubeconform:
     runs-on: ubuntu-latest
     if: contains(inputs.languages, 'kubernetes') || contains(inputs.languages, 'helm')
@@ -94,6 +171,7 @@ jobs:
           curl -sL https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz | tar xz
           sudo mv kubeconform /usr/local/bin/
       - name: Validate manifests
+        continue-on-error: true
         run: |
           find . \( -path '*/manifest/*.yaml' -o -path '*/templates/*.yaml' \) -print0 \
             | xargs -0 kubeconform -summary -strict || true

@@ -1,0 +1,19 @@
+rules:
+  - id: cpp-using-namespace-std-in-header
+    message: 헤더 파일에 'using namespace std;'를 쓰지 마세요. 헤더를 include하는 모든 곳에 전파됩니다.
+    severity: WARNING
+    languages: [cpp]
+    pattern: using namespace std;
+    paths:
+      include:
+        - '**/*.h'
+        - '**/*.hpp'
+
+  - id: cpp-naked-new
+    message: new로 직접 할당하지 말고 std::make_unique 또는 std::make_shared를 사용하세요.
+    severity: WARNING
+    languages: [cpp]
+    pattern: new $TYPE(...)
+    paths:
+      exclude:
+        - '**/*test*'
