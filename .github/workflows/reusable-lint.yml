@@ -24,7 +24,7 @@ on:
         description: '공유 설정 리포 ref (tag/branch)'
         required: false
         type: string
-        default: 'v0.4.0'
+        default: 'v0.4.1'
     secrets:
       reviewdog_token:
         required: true
@@ -32,7 +32,7 @@ on:
 jobs:
   semgrep:
     runs-on: ubuntu-latest
-    if: contains(inputs.languages, 'python') || contains(inputs.languages, 'go') || contains(inputs.languages, 'java') || contains(inputs.languages, 'typescript') || contains(inputs.languages, 'javascript') || contains(inputs.languages, 'c') || contains(inputs.languages, 'cpp') || contains(inputs.languages, 'terraform') || contains(inputs.languages, 'kubernetes') || contains(inputs.languages, 'helm')
+    if: contains(format(',{0},', inputs.languages), ',python,') || contains(format(',{0},', inputs.languages), ',go,') || contains(format(',{0},', inputs.languages), ',java,') || contains(format(',{0},', inputs.languages), ',typescript,') || contains(format(',{0},', inputs.languages), ',javascript,') || contains(format(',{0},', inputs.languages), ',c,') || contains(format(',{0},', inputs.languages), ',cpp,') || contains(format(',{0},', inputs.languages), ',terraform,') || contains(format(',{0},', inputs.languages), ',kubernetes,') || contains(format(',{0},', inputs.languages), ',helm,')
     steps:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
@@ -52,7 +52,7 @@ jobs:
 
   ast-grep:
     runs-on: ubuntu-latest
-    if: contains(inputs.languages, 'python') || contains(inputs.languages, 'go') || contains(inputs.languages, 'java') || contains(inputs.languages, 'typescript') || contains(inputs.languages, 'javascript') || contains(inputs.languages, 'vue') || contains(inputs.languages, 'c') || contains(inputs.languages, 'cpp') || contains(inputs.languages, 'css')
+    if: contains(format(',{0},', inputs.languages), ',python,') || contains(format(',{0},', inputs.languages), ',go,') || contains(format(',{0},', inputs.languages), ',java,') || contains(format(',{0},', inputs.languages), ',typescript,') || contains(format(',{0},', inputs.languages), ',javascript,') || contains(format(',{0},', inputs.languages), ',vue,') || contains(format(',{0},', inputs.languages), ',c,') || contains(format(',{0},', inputs.languages), ',cpp,') || contains(format(',{0},', inputs.languages), ',css,')
     steps:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
@@ -67,7 +67,7 @@ jobs:
 
   shellcheck:
     runs-on: ubuntu-latest
-    if: contains(inputs.languages, 'shell')
+    if: contains(format(',{0},', inputs.languages), ',shell,')
     steps:
       - uses: actions/checkout@v4
       - uses: reviewdog/action-shellcheck@v1
@@ -78,7 +78,7 @@ jobs:
 
   hadolint:
     runs-on: ubuntu-latest
-    if: contains(inputs.languages, 'dockerfile')
+    if: contains(format(',{0},', inputs.languages), ',dockerfile,')
     steps:
       - uses: actions/checkout@v4
       - uses: reviewdog/action-hadolint@v1
@@ -88,7 +88,7 @@ jobs:
 
   cppcheck:
     runs-on: ubuntu-latest
-    if: contains(inputs.languages, 'c') || contains(inputs.languages, 'cpp')
+    if: contains(format(',{0},', inputs.languages), ',c,') || contains(format(',{0},', inputs.languages), ',cpp,')
     steps:
       - uses: actions/checkout@v4
       - name: Install cppcheck
@@ -106,7 +106,7 @@ jobs:
 
   stylelint:
     runs-on: ubuntu-latest
-    if: contains(inputs.languages, 'css')
+    if: contains(format(',{0},', inputs.languages), ',css,')
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -126,7 +126,7 @@ jobs:
 
   yamllint:
     runs-on: ubuntu-latest
-    if: contains(inputs.languages, 'yaml')
+    if: contains(format(',{0},', inputs.languages), ',yaml,')
     steps:
       - uses: actions/checkout@v4
       - uses: reviewdog/action-yamllint@v1
@@ -137,7 +137,7 @@ jobs:
 
   tfsec:
     runs-on: ubuntu-latest
-    if: contains(inputs.languages, 'terraform')
+    if: contains(format(',{0},', inputs.languages), ',terraform,')
     steps:
       - uses: actions/checkout@v4
       - uses: reviewdog/action-tfsec@v1
@@ -148,7 +148,7 @@ jobs:
 
   helm-lint:
     runs-on: ubuntu-latest
-    if: contains(inputs.languages, 'helm')
+    if: contains(format(',{0},', inputs.languages), ',helm,')
     steps:
       - uses: actions/checkout@v4
       - uses: azure/setup-helm@v4
@@ -163,7 +163,7 @@ jobs:
 
   kubeconform:
     runs-on: ubuntu-latest
-    if: contains(inputs.languages, 'kubernetes') || contains(inputs.languages, 'helm')
+    if: contains(format(',{0},', inputs.languages), ',kubernetes,') || contains(format(',{0},', inputs.languages), ',helm,')
     steps:
       - uses: actions/checkout@v4
       - name: Install kubeconform
