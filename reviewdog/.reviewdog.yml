@@ -1,7 +1,7 @@
 runner:
   semgrep:
-    cmd: semgrep --config=semgrep/ci.yaml --json
-    format: semgrepjson
+    cmd: semgrep --config=semgrep/rules/ --sarif
+    format: sarif
     name: semgrep
     level: warning
 

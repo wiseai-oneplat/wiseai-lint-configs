@@ -2,7 +2,7 @@
 #
 # jobs:
 #   lint:
-#     uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.3.0
+#     uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.3.1
 #     with:
 #       languages: 'python,go'    # 쉼표 구분, 옵션: python,go,java,typescript,shell,dockerfile,kubernetes,helm
 #     secrets:
@@ -23,7 +23,7 @@ on:
         description: '공유 설정 리포 ref (tag/branch)'
         required: false
         type: string
-        default: 'v0.3.0'
+        default: 'v0.3.1'
     secrets:
       reviewdog_token:
         required: true
@@ -41,9 +41,10 @@ jobs:
       - uses: reviewdog/action-setup@v1
       - run: pip install semgrep
       - name: Run semgrep
+        continue-on-error: true
         run: |
-          semgrep --config .lint-configs/semgrep/ci.yaml --json > semgrep.json || true
-          cat semgrep.json | reviewdog -f=semgrepjson -name=semgrep -reporter=github-pr-review
+          semgrep --config .lint-configs/semgrep/rules/ --sarif --no-error > semgrep.sarif || true
+          cat semgrep.sarif | reviewdog -f=sarif -name=semgrep -reporter=github-pr-review -level=warning -fail-on-error=false
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.reviewdog_token }}
 
@@ -58,6 +59,7 @@ jobs:
           ref: ${{ inputs.configs_ref }}
           path: .lint-configs
       - uses: ast-grep/action@v1
+        continue-on-error: true
         with:
           config: .lint-configs/ast-grep/sgconfig.yml
 

@@ -74,10 +74,10 @@ wiseai-oneplat 조직 12개 저장소에 적용되는 코드 분석 + AI 리뷰 
 
 ```
 wiseai-oneplat/wiseai-lint-configs
-    │ git tag v0.3.0
+    │ git tag v0.3.1
     ▼
 각 저장소 .github/workflows/lint.yml
-    │ uses: .../reusable-lint.yml@v0.3.0
+    │ uses: .../reusable-lint.yml@v0.3.1
     ▼
 GitHub Action runner
     │ checkout 저장소 + 공유 lint-configs
@@ -108,7 +108,7 @@ GitHub PR
 
 ## 버전/롤백
 
-- 공유 리포: SemVer (`v0.1.0` → `v0.3.0`)
+- 공유 리포: SemVer (`v0.1.0` → `v0.3.1`)
 - 각 저장소는 자기 페이스로 업그레이드 (`ref:` 라인만 수정)
 - 룰 1개가 false positive 폭발 시 → 공유 리포에 patch 릴리스 (`v0.1.1`)
 - 긴급 시 저장소 측에서 ref를 이전 tag로 되돌리면 즉시 롤백

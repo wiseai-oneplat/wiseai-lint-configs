@@ -4,7 +4,7 @@
 
 ## 공통 사전 작업
 
-1. 이 리포의 현재 권장 tag는 `v0.3.0` 이상. (v0.1.x는 private repo 접근 권한 처리 누락으로 deprecated)
+1. 이 리포의 현재 권장 tag는 `v0.3.1` 이상. (v0.1.x는 private repo 접근 권한 처리 누락으로 deprecated)
 2. 각 저장소 GitHub Secrets에 다음 등록 (PR-Agent를 쓰는 경우):
    - `ANTHROPIC_API_KEY`
 3. `GITHUB_TOKEN`은 기본 제공 → 별도 설정 불필요.
@@ -37,7 +37,7 @@ name: Lint
 on: [pull_request]
 jobs:
   lint:
-    uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.3.0
+    uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.3.1
     with:
       languages: 'python,go,typescript,dockerfile'
     secrets:
@@ -48,7 +48,7 @@ jobs:
 ```yaml
 jobs:
   lint:
-    uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.3.0
+    uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.3.1
     with:
       languages: 'java,dockerfile'
     secrets:
@@ -61,7 +61,7 @@ Gradle 빌드 측에는 별도로 SpotBugs/Checkstyle 플러그인 추가 (각 �
 ```yaml
 jobs:
   lint:
-    uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.3.0
+    uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.3.1
     with:
       languages: 'shell,kubernetes'   # 또는 'helm,kubernetes'
     secrets:
@@ -72,7 +72,7 @@ jobs:
 ```yaml
 jobs:
   lint:
-    uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.3.0
+    uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.3.1
     with:
       languages: 'typescript,shell'
     secrets:
@@ -85,7 +85,7 @@ jobs:
 ```yaml
 repos:
   - repo: https://github.com/wiseai-oneplat/wiseai-lint-configs
-    rev: v0.3.0
+    rev: v0.3.1
     hooks:
       - id: semgrep-shared
       - id: ast-grep-shared
