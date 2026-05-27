@@ -4,17 +4,11 @@
 
 ## 공통 사전 작업
 
-1. 이 리포의 현재 권장 tag는 `v0.2.0` 이상. (v0.1.x는 private repo 접근 권한 처리 누락으로 deprecated)
-2. **wiseai-oneplat org secret 등록 (필수)**:
-   - `LINT_CONFIGS_READ_PAT` — 이 리포를 읽을 권한이 있는 PAT
-   - 생성 방법: GitHub → Settings → Developer settings → Personal access tokens
-     → Fine-grained tokens 권장. Resource owner: `wiseai-oneplat`, Repository access:
-     `wiseai-oneplat/wiseai-lint-configs`, Permissions: Contents = Read-only.
-   - 등록: GitHub → wiseai-oneplat org → Settings → Secrets and variables → Actions
-     → New organization secret. Name: `LINT_CONFIGS_READ_PAT`, Visibility: All repositories.
-3. 각 저장소 GitHub Secrets에 다음 등록 (PR-Agent를 쓰는 경우):
+1. 이 리포의 현재 권장 tag는 `v0.3.0` 이상. (v0.1.x는 private repo 접근 권한 처리 누락으로 deprecated)
+2. 각 저장소 GitHub Secrets에 다음 등록 (PR-Agent를 쓰는 경우):
    - `ANTHROPIC_API_KEY`
-4. `GITHUB_TOKEN`은 기본 제공 → 별도 설정 불필요.
+3. `GITHUB_TOKEN`은 기본 제공 → 별도 설정 불필요.
+4. 이 리포는 public이므로 checkout용 PAT 불필요.
 
 ## 통합 매트릭스
 
@@ -43,24 +37,22 @@ name: Lint
 on: [pull_request]
 jobs:
   lint:
-    uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.2.0
+    uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.3.0
     with:
       languages: 'python,go,typescript,dockerfile'
     secrets:
       reviewdog_token: ${{ secrets.GITHUB_TOKEN }}
-      configs_token:   ${{ secrets.LINT_CONFIGS_READ_PAT }}
 ```
 
 ### Java (wiseai-aiu)
 ```yaml
 jobs:
   lint:
-    uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.2.0
+    uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.3.0
     with:
       languages: 'java,dockerfile'
     secrets:
       reviewdog_token: ${{ secrets.GITHUB_TOKEN }}
-      configs_token:   ${{ secrets.LINT_CONFIGS_READ_PAT }}
 ```
 
 Gradle 빌드 측에는 별도로 SpotBugs/Checkstyle 플러그인 추가 (각 저장소에서 설정).
@@ -69,24 +61,22 @@ Gradle 빌드 측에는 별도로 SpotBugs/Checkstyle 플러그인 추가 (각 �
 ```yaml
 jobs:
   lint:
-    uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.2.0
+    uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.3.0
     with:
       languages: 'shell,kubernetes'   # 또는 'helm,kubernetes'
     secrets:
       reviewdog_token: ${{ secrets.GITHUB_TOKEN }}
-      configs_token:   ${{ secrets.LINT_CONFIGS_READ_PAT }}
 ```
 
 ### homebrew-tools
 ```yaml
 jobs:
   lint:
-    uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.2.0
+    uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.3.0
     with:
       languages: 'typescript,shell'
     secrets:
       reviewdog_token: ${{ secrets.GITHUB_TOKEN }}
-      configs_token:   ${{ secrets.LINT_CONFIGS_READ_PAT }}
 ```
 
 ## pre-commit 통합 (해당 저장소)
@@ -95,7 +85,7 @@ jobs:
 ```yaml
 repos:
   - repo: https://github.com/wiseai-oneplat/wiseai-lint-configs
-    rev: v0.2.0
+    rev: v0.3.0
     hooks:
       - id: semgrep-shared
       - id: ast-grep-shared
