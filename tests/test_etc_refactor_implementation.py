@@ -128,7 +128,7 @@ class EtcRefactorImplementationTest(unittest.TestCase):
 
     def test_pr_d_version_and_rule_catalog_are_generated(self):
         version = (ROOT / "VERSION").read_text().strip()
-        self.assertEqual("v0.4.4", version)
+        self.assertEqual("v0.4.5", version)
 
         guide = (ROOT / "docs" / "RULE_AUTHORING.md").read_text()
         self.assertIn("<!-- RULE_CATALOG:START -->", guide)

@@ -2,7 +2,7 @@
 #
 # jobs:
 #   ai-review:
-#     uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-ai-review.yml@v0.4.4
+#     uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-ai-review.yml@v0.4.5
 #     with:
 #       ai_provider: openai-api   # anthropic | openai-api | gemini | chatgpt-auth | none
 #     secrets:
@@ -23,7 +23,7 @@ on:
         description: '공유 설정 리포 ref (tag/branch)'
         required: false
         type: string
-        default: 'v0.4.4'
+        default: 'v0.4.5'
     secrets:
       pr_agent_token:
         required: true

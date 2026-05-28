@@ -30,11 +30,12 @@ class ReusableLintPolicyTest(unittest.TestCase):
 
     def test_reviewdog_actions_receive_shared_policy_inputs(self):
         text = WORKFLOW.read_text()
+        fail_level_expr = "${{ (inputs.fail_on_error || inputs.lint_mode == 'blocking') && 'any' || 'none' }}"
+
         for action in (
             "reviewdog/action-shellcheck",
             "reviewdog/action-hadolint",
             "reviewdog/action-yamllint",
-            "reviewdog/action-tfsec",
         ):
             with self.subTest(action=action):
                 index = text.find(action)
@@ -42,7 +43,14 @@ class ReusableLintPolicyTest(unittest.TestCase):
                 block = text[index : index + 350]
                 self.assertIn("reporter: ${{ inputs.reporter_mode }}", block)
                 self.assertIn("level: ${{ inputs.reviewdog_level }}", block)
-                self.assertIn("fail_on_error: ${{ inputs.fail_on_error || inputs.lint_mode == 'blocking' }}", block)
+                self.assertIn(f"fail_level: {fail_level_expr}", block)
+
+        index = text.find("reviewdog/action-tfsec")
+        self.assertNotEqual(index, -1, "missing reviewdog/action-tfsec")
+        block = text[index : index + 350]
+        self.assertIn("reporter: ${{ inputs.reporter_mode }}", block)
+        self.assertIn("level: ${{ inputs.reviewdog_level }}", block)
+        self.assertIn("fail_on_error: ${{ inputs.fail_on_error || inputs.lint_mode == 'blocking' }}", block)
 
     def test_summary_only_tools_write_step_summary_and_respect_blocking(self):
         text = WORKFLOW.read_text()

@@ -60,7 +60,7 @@ class DocumentationConsistencyTest(unittest.TestCase):
                 "fixtures/semgrep/positive",
                 "fixtures/ast-grep/positive",
                 "scripts/test-rules.sh",
-                "v0.4.4",
+                "v0.4.5",
             ],
             "pr-agent/providers/chatgpt-auth.experimental.md": [
                 "reusable-ai-review.yml",
@@ -81,7 +81,7 @@ class DocumentationConsistencyTest(unittest.TestCase):
             if ".git" in path.parts:
                 continue
             text = path.read_text()
-            for stale_tag in ("v0.4.0", "v0.4.1", "v0.4.2", "v0.4.3"):
+            for stale_tag in ("v0.4.0", "v0.4.1", "v0.4.2", "v0.4.3", "v0.4.4"):
                 if stale_tag in text:
                     stale_references.append(f"{path.relative_to(ROOT)}:{stale_tag}")
 

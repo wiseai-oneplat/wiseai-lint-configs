@@ -2,7 +2,7 @@
 #
 # jobs:
 #   lint:
-#     uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.4.4
+#     uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.4.5
 #     with:
 #       languages: 'python,go'
 #       rule_packs: all
@@ -24,7 +24,7 @@ on:
         description: '공유 설정 리포 ref (tag/branch)'
         required: false
         type: string
-        default: 'v0.4.4'
+        default: 'v0.4.5'
       rule_packs:
         description: '쉼표 구분 룰 팩 목록: all, security, reliability, style, infra'
         required: false
@@ -174,7 +174,7 @@ jobs:
           github_token: ${{ secrets.reviewdog_token }}
           reporter: ${{ inputs.reporter_mode }}
           level: ${{ inputs.reviewdog_level }}
-          fail_on_error: ${{ inputs.fail_on_error || inputs.lint_mode == 'blocking' }}
+          fail_level: ${{ (inputs.fail_on_error || inputs.lint_mode == 'blocking') && 'any' || 'none' }}
 
   hadolint:
     runs-on: ubuntu-latest
@@ -187,7 +187,7 @@ jobs:
           github_token: ${{ secrets.reviewdog_token }}
           reporter: ${{ inputs.reporter_mode }}
           level: ${{ inputs.reviewdog_level }}
-          fail_on_error: ${{ inputs.fail_on_error || inputs.lint_mode == 'blocking' }}
+          fail_level: ${{ (inputs.fail_on_error || inputs.lint_mode == 'blocking') && 'any' || 'none' }}
 
   cppcheck:
     runs-on: ubuntu-latest
@@ -242,7 +242,7 @@ jobs:
           github_token: ${{ secrets.reviewdog_token }}
           reporter: ${{ inputs.reporter_mode }}
           level: ${{ inputs.reviewdog_level }}
-          fail_on_error: ${{ inputs.fail_on_error || inputs.lint_mode == 'blocking' }}
+          fail_level: ${{ (inputs.fail_on_error || inputs.lint_mode == 'blocking') && 'any' || 'none' }}
 
   tfsec:
     runs-on: ubuntu-latest

@@ -2,7 +2,7 @@
 
 ## 공통 사전 작업
 
-1. 권장 tag: `v0.4.4` 이상.
+1. 권장 tag: `v0.4.5` 이상.
 2. 호출 측 저장소 secret 등록 (AI 리뷰 사용 시, provider별 1개만 필요):
    - Anthropic: `ANTHROPIC_API_KEY`
    - OpenAI/ChatGPT API: `OPENAI_KEY`
@@ -32,7 +32,7 @@ permissions:
 
 jobs:
   shared-lint:
-    uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.4.4
+    uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.4.5
     with:
       languages: '<쉼표 구분 언어 목록>'
       rule_packs: all
@@ -142,7 +142,7 @@ with:
 ```yaml
 repos:
   - repo: https://github.com/wiseai-oneplat/wiseai-lint-configs
-    rev: v0.4.4
+    rev: v0.4.5
     hooks:
       - id: semgrep-shared
       - id: ast-grep-shared
@@ -180,7 +180,7 @@ permissions:
 
 jobs:
   ai-review:
-    uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-ai-review.yml@v0.4.4
+    uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-ai-review.yml@v0.4.5
     with:
       ai_provider: openai-api # anthropic | openai-api | gemini | none
     secrets:
