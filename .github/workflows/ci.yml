@@ -13,6 +13,7 @@ env:
   SEMGREP_VERSION: '1.164.0'
   AST_GREP_VERSION: '0.43.0'
   PRE_COMMIT_VERSION: '4.3.0'
+  ACTIONLINT_VERSION: 'v1.7.7'
 
 jobs:
   validate:
@@ -27,6 +28,10 @@ jobs:
       - uses: actions/setup-node@v4.4.0
         with:
           node-version: '20'
+
+      - uses: actions/setup-go@v5.5.0
+        with:
+          go-version: '1.24'
 
       - name: Install rule engines
         run: |
@@ -63,6 +68,9 @@ jobs:
       - name: Validate YAML files
         run: |
           ruby -e "require 'yaml'; Dir['.github/workflows/*.yml','.github/workflows/*.yaml','semgrep/rules/*.yaml','ast-grep/**/*.yml','ast-grep/**/*.yaml','pre-commit/*.yaml','.pre-commit-hooks.yaml'].each { |f| YAML.load_file(f) }; puts 'yaml ok'"
+
+      - name: Validate GitHub Actions workflows
+        run: go run github.com/rhysd/actionlint/cmd/actionlint@${ACTIONLINT_VERSION}
 
       - name: Test shared rules
         env:

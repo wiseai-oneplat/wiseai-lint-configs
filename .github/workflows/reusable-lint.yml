@@ -2,7 +2,7 @@
 #
 # jobs:
 #   lint:
-#     uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.4.1
+#     uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.4.2
 #     with:
 #       languages: 'python,go'
 #       rule_packs: all
@@ -24,7 +24,7 @@ on:
         description: '공유 설정 리포 ref (tag/branch)'
         required: false
         type: string
-        default: 'v0.4.1'
+        default: 'v0.4.2'
       rule_packs:
         description: '쉼표 구분 룰 팩 목록: all, security, reliability, style, infra'
         required: false

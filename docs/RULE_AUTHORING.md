@@ -57,7 +57,7 @@
 2. 룰 정의의 `severity: OFF` 또는 파일 자체를 임시 rename (`.yaml.disabled`)
 3. 트래킹 이슈 생성 → 수정 후 재활성화
 
-## 룰 카탈로그 (v0.4.1)
+## 룰 카탈로그 (v0.4.2)
 
 <!-- RULE_CATALOG:START -->
 | ID | 도구 | 언어/도메인 | severity |

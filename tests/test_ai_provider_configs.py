@@ -66,11 +66,14 @@ class AiProviderConfigTest(unittest.TestCase):
             "chatgpt-auth",
             "qodo-ai/pr-agent",
             "OPENAI_KEY",
-            "GOOGLE_AI_STUDIO.GEMINI_API_KEY",
-            "ANTHROPIC.KEY",
+            "OPENAI__KEY",
+            "GEMINI_API_KEY",
+            "ANTHROPIC_API_KEY",
         ):
             self.assertIn(needle, text)
 
+        self.assertNotIn("ANTHROPIC.KEY:", text)
+        self.assertNotIn("GOOGLE_AI_STUDIO.GEMINI_API_KEY:", text)
         self.assertRegex(text, re.compile(r"chatgpt-auth.*exit 1", re.S))
 
     def test_docs_explain_supported_ai_review_providers(self):

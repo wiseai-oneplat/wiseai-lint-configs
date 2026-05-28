@@ -39,7 +39,7 @@ class DocumentationConsistencyTest(unittest.TestCase):
                 "fixtures/semgrep/positive",
                 "fixtures/ast-grep/positive",
                 "scripts/test-rules.sh",
-                "v0.4.1",
+                "v0.4.2",
             ],
             "pr-agent/providers/chatgpt-auth.experimental.md": [
                 "reusable-ai-review.yml",
@@ -54,14 +54,15 @@ class DocumentationConsistencyTest(unittest.TestCase):
                 for token in tokens:
                     self.assertIn(token, text)
 
-    def test_markdown_files_do_not_use_stale_recommended_tag(self):
+    def test_markdown_files_do_not_use_stale_recommended_tags(self):
         stale_references = []
         for path in ROOT.rglob("*.md"):
             if ".git" in path.parts:
                 continue
             text = path.read_text()
-            if "v0.4.0" in text:
-                stale_references.append(str(path.relative_to(ROOT)))
+            for stale_tag in ("v0.4.0", "v0.4.1"):
+                if stale_tag in text:
+                    stale_references.append(f"{path.relative_to(ROOT)}:{stale_tag}")
 
         self.assertEqual([], stale_references)
 
