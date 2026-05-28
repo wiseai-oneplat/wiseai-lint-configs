@@ -181,7 +181,7 @@ jobs:
     with:
       ai_provider: openai-api # anthropic | openai-api | gemini | none
     secrets:
-      github_token: ${{ secrets.GITHUB_TOKEN }}
+      pr_agent_token: ${{ secrets.GITHUB_TOKEN }}
       openai_key: ${{ secrets.OPENAI_KEY }}
 ```
 

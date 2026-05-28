@@ -6,7 +6,7 @@
 #     with:
 #       ai_provider: openai-api   # anthropic | openai-api | gemini | chatgpt-auth | none
 #     secrets:
-#       github_token: ${{ secrets.GITHUB_TOKEN }}
+#       pr_agent_token: ${{ secrets.GITHUB_TOKEN }}
 #       openai_key: ${{ secrets.OPENAI_KEY }}
 
 name: Shared AI Review
@@ -25,7 +25,7 @@ on:
         type: string
         default: 'v0.4.2'
     secrets:
-      github_token:
+      pr_agent_token:
         required: true
       anthropic_key:
         required: false
@@ -37,7 +37,7 @@ on:
 jobs:
   reject-chatgpt-auth:
     runs-on: ubuntu-latest
-    if: inputs.ai_provider == 'chatgpt-auth'
+    if: ${{ inputs.ai_provider == 'chatgpt-auth' }}
     steps:
       - name: Reject ChatGPT Auth in CI
         run: |
@@ -46,7 +46,7 @@ jobs:
 
   ai-review:
     runs-on: ubuntu-latest
-    if: inputs.ai_provider == 'anthropic' || inputs.ai_provider == 'openai-api' || inputs.ai_provider == 'gemini'
+    if: ${{ inputs.ai_provider == 'anthropic' || inputs.ai_provider == 'openai-api' || inputs.ai_provider == 'gemini' }}
     permissions:
       contents: read
       pull-requests: write
@@ -78,7 +78,7 @@ jobs:
       - name: Run Qodo Merge
         uses: qodo-ai/pr-agent@main
         env:
-          GITHUB_TOKEN: ${{ secrets.github_token }}
+          GITHUB_TOKEN: ${{ secrets.pr_agent_token }}
           OPENAI_KEY: ${{ secrets.openai_key }}
           OPENAI__KEY: ${{ secrets.openai_key }}
           ANTHROPIC_API_KEY: ${{ secrets.anthropic_key }}

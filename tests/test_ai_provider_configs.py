@@ -65,6 +65,7 @@ class AiProviderConfigTest(unittest.TestCase):
             "gemini",
             "chatgpt-auth",
             "qodo-ai/pr-agent",
+            "pr_agent_token",
             "OPENAI_KEY",
             "OPENAI__KEY",
             "GEMINI_API_KEY",
