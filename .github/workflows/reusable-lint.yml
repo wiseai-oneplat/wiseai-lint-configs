@@ -79,7 +79,7 @@ jobs:
       helm_lint: ${{ steps.resolve.outputs.helm_lint }}
       kubeconform: ${{ steps.resolve.outputs.kubeconform }}
     steps:
-      - uses: actions/checkout@v4.3.1
+      - uses: actions/checkout@v6.0.2
         with:
           repository: wiseai-oneplat/wiseai-lint-configs
           ref: ${{ inputs.configs_ref }}
@@ -96,8 +96,8 @@ jobs:
     needs: language-matrix
     if: needs.language-matrix.outputs.semgrep == 'true'
     steps:
-      - uses: actions/checkout@v4.3.1
-      - uses: actions/checkout@v4.3.1
+      - uses: actions/checkout@v6.0.2
+      - uses: actions/checkout@v6.0.2
         with:
           repository: wiseai-oneplat/wiseai-lint-configs
           ref: ${{ inputs.configs_ref }}
@@ -132,8 +132,8 @@ jobs:
     needs: language-matrix
     if: needs.language-matrix.outputs.ast_grep == 'true'
     steps:
-      - uses: actions/checkout@v4.3.1
-      - uses: actions/checkout@v4.3.1
+      - uses: actions/checkout@v6.0.2
+      - uses: actions/checkout@v6.0.2
         with:
           repository: wiseai-oneplat/wiseai-lint-configs
           ref: ${{ inputs.configs_ref }}
@@ -168,7 +168,7 @@ jobs:
     needs: language-matrix
     if: needs.language-matrix.outputs.shellcheck == 'true'
     steps:
-      - uses: actions/checkout@v4.3.1
+      - uses: actions/checkout@v6.0.2
       - uses: reviewdog/action-shellcheck@v1.9.0
         with:
           github_token: ${{ secrets.reviewdog_token }}
@@ -181,7 +181,7 @@ jobs:
     needs: language-matrix
     if: needs.language-matrix.outputs.hadolint == 'true'
     steps:
-      - uses: actions/checkout@v4.3.1
+      - uses: actions/checkout@v6.0.2
       - uses: reviewdog/action-hadolint@v1.9.0
         with:
           github_token: ${{ secrets.reviewdog_token }}
@@ -194,7 +194,7 @@ jobs:
     needs: language-matrix
     if: needs.language-matrix.outputs.cppcheck == 'true'
     steps:
-      - uses: actions/checkout@v4.3.1
+      - uses: actions/checkout@v6.0.2
       - name: Install cppcheck
         run: sudo apt-get update && sudo apt-get install -y cppcheck
       - uses: reviewdog/action-setup@v1.9.0
@@ -214,8 +214,8 @@ jobs:
     needs: language-matrix
     if: needs.language-matrix.outputs.stylelint == 'true'
     steps:
-      - uses: actions/checkout@v4.3.1
-      - uses: actions/setup-node@v4.4.0
+      - uses: actions/checkout@v6.0.2
+      - uses: actions/setup-node@v6.4.0
         with:
           node-version: '20'
       - name: Install stylelint
@@ -236,7 +236,7 @@ jobs:
     needs: language-matrix
     if: needs.language-matrix.outputs.yamllint == 'true'
     steps:
-      - uses: actions/checkout@v4.3.1
+      - uses: actions/checkout@v6.0.2
       - uses: reviewdog/action-yamllint@v1.9.0
         with:
           github_token: ${{ secrets.reviewdog_token }}
@@ -249,7 +249,7 @@ jobs:
     needs: language-matrix
     if: needs.language-matrix.outputs.tfsec == 'true'
     steps:
-      - uses: actions/checkout@v4.3.1
+      - uses: actions/checkout@v6.0.2
       - uses: reviewdog/action-tfsec@v1.9.0
         with:
           github_token: ${{ secrets.reviewdog_token }}
@@ -262,8 +262,8 @@ jobs:
     needs: language-matrix
     if: needs.language-matrix.outputs.helm_lint == 'true'
     steps:
-      - uses: actions/checkout@v4.3.1
-      - uses: azure/setup-helm@v4.3.1
+      - uses: actions/checkout@v6.0.2
+      - uses: azure/setup-helm@v5.0.0
       - name: Run helm lint
         continue-on-error: ${{ inputs.lint_mode == 'advisory' && inputs.fail_on_error == false }}
         run: |
@@ -287,7 +287,7 @@ jobs:
     needs: language-matrix
     if: needs.language-matrix.outputs.kubeconform == 'true'
     steps:
-      - uses: actions/checkout@v4.3.1
+      - uses: actions/checkout@v6.0.2
       - name: Install kubeconform
         run: |
           curl -sL "https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz" | tar xz

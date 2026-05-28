@@ -76,6 +76,32 @@ class CiAndRuleHarnessTest(unittest.TestCase):
         ):
             self.assertIn(needle, text)
 
+    def test_workflows_use_node24_ready_action_pins(self):
+        workflow_dir = ROOT / ".github" / "workflows"
+        combined = "\n".join(path.read_text() for path in workflow_dir.glob("*.yml"))
+        ci_text = (workflow_dir / "ci.yml").read_text()
+
+        for needle in (
+            "actions/checkout@v6.0.2",
+            "actions/setup-python@v6.2.0",
+            "actions/setup-node@v6.4.0",
+            "actions/setup-go@v6.4.0",
+            "azure/setup-helm@v5.0.0",
+        ):
+            self.assertIn(needle, combined)
+
+        for stale in (
+            "actions/checkout@v4",
+            "actions/checkout@v4.3.1",
+            "actions/setup-python@v5.6.0",
+            "actions/setup-node@v4.4.0",
+            "actions/setup-go@v5.5.0",
+            "azure/setup-helm@v4.3.1",
+        ):
+            self.assertNotIn(stale, combined)
+
+        self.assertIn("cache: false", ci_text)
+
     def test_rule_authoring_docs_describe_fixture_harness(self):
         text = (ROOT / "docs" / "RULE_AUTHORING.md").read_text()
         for needle in (

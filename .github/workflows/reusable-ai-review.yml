@@ -52,9 +52,9 @@ jobs:
       pull-requests: write
       issues: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
         with:
           repository: wiseai-oneplat/wiseai-lint-configs
           ref: ${{ inputs.configs_ref }}
