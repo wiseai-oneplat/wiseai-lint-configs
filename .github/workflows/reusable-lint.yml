@@ -2,7 +2,7 @@
 #
 # jobs:
 #   lint:
-#     uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.4.3
+#     uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.4.4
 #     with:
 #       languages: 'python,go'
 #       rule_packs: all
@@ -24,7 +24,7 @@ on:
         description: '공유 설정 리포 ref (tag/branch)'
         required: false
         type: string
-        default: 'v0.4.3'
+        default: 'v0.4.4'
       rule_packs:
         description: '쉼표 구분 룰 팩 목록: all, security, reliability, style, infra'
         required: false
@@ -102,7 +102,7 @@ jobs:
           repository: wiseai-oneplat/wiseai-lint-configs
           ref: ${{ inputs.configs_ref }}
           path: .lint-configs
-      - uses: reviewdog/action-setup@v1.9.0
+      - uses: reviewdog/action-setup@v1.5.0
       - name: Install semgrep
         run: python3 -m pip install "semgrep==${SEMGREP_VERSION}"
       - name: Resolve semgrep rule packs
@@ -169,7 +169,7 @@ jobs:
     if: needs.language-matrix.outputs.shellcheck == 'true'
     steps:
       - uses: actions/checkout@v6.0.2
-      - uses: reviewdog/action-shellcheck@v1.9.0
+      - uses: reviewdog/action-shellcheck@v1.32.0
         with:
           github_token: ${{ secrets.reviewdog_token }}
           reporter: ${{ inputs.reporter_mode }}
@@ -182,7 +182,7 @@ jobs:
     if: needs.language-matrix.outputs.hadolint == 'true'
     steps:
       - uses: actions/checkout@v6.0.2
-      - uses: reviewdog/action-hadolint@v1.9.0
+      - uses: reviewdog/action-hadolint@v1.50.5
         with:
           github_token: ${{ secrets.reviewdog_token }}
           reporter: ${{ inputs.reporter_mode }}
@@ -197,7 +197,7 @@ jobs:
       - uses: actions/checkout@v6.0.2
       - name: Install cppcheck
         run: sudo apt-get update && sudo apt-get install -y cppcheck
-      - uses: reviewdog/action-setup@v1.9.0
+      - uses: reviewdog/action-setup@v1.5.0
       - name: Run cppcheck
         continue-on-error: ${{ inputs.lint_mode == 'advisory' && inputs.fail_on_error == false }}
         run: |
@@ -220,7 +220,7 @@ jobs:
           node-version: '20'
       - name: Install stylelint
         run: npm install -g "stylelint@${STYLELINT_VERSION}" "stylelint-config-standard@${STYLELINT_CONFIG_STANDARD_VERSION}"
-      - uses: reviewdog/action-setup@v1.9.0
+      - uses: reviewdog/action-setup@v1.5.0
       - name: Run stylelint
         continue-on-error: ${{ inputs.lint_mode == 'advisory' && inputs.fail_on_error == false }}
         run: |
@@ -237,7 +237,7 @@ jobs:
     if: needs.language-matrix.outputs.yamllint == 'true'
     steps:
       - uses: actions/checkout@v6.0.2
-      - uses: reviewdog/action-yamllint@v1.9.0
+      - uses: reviewdog/action-yamllint@v1.21.0
         with:
           github_token: ${{ secrets.reviewdog_token }}
           reporter: ${{ inputs.reporter_mode }}
@@ -250,7 +250,7 @@ jobs:
     if: needs.language-matrix.outputs.tfsec == 'true'
     steps:
       - uses: actions/checkout@v6.0.2
-      - uses: reviewdog/action-tfsec@v1.9.0
+      - uses: reviewdog/action-tfsec@v1.30.0
         with:
           github_token: ${{ secrets.reviewdog_token }}
           reporter: ${{ inputs.reporter_mode }}

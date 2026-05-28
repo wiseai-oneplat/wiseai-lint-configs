@@ -59,10 +59,10 @@
 
 ```
 공유 lint-configs 리포 (public)
-    │ git tag v0.4.3
+    │ git tag v0.4.4
     ▼
 호출 측 .github/workflows/lint.yml
-    │ uses: .../reusable-lint.yml@v0.4.3
+    │ uses: .../reusable-lint.yml@v0.4.4
     │ inputs: languages, reporter_mode, reviewdog_level, lint_mode, fail_on_error
     │ optional: configs_ref override, rule_packs
     ▼

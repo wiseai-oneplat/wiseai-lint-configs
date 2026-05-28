@@ -80,11 +80,11 @@ class EtcRefactorImplementationTest(unittest.TestCase):
             "STYLELINT_VERSION:",
             "STYLELINT_CONFIG_STANDARD_VERSION:",
             "KUBECONFORM_VERSION:",
-            "reviewdog/action-setup@v1.9.0",
-            "reviewdog/action-shellcheck@v1.9.0",
-            "reviewdog/action-hadolint@v1.9.0",
-            "reviewdog/action-yamllint@v1.9.0",
-            "reviewdog/action-tfsec@v1.9.0",
+            "reviewdog/action-setup@v1.5.0",
+            "reviewdog/action-shellcheck@v1.32.0",
+            "reviewdog/action-hadolint@v1.50.5",
+            "reviewdog/action-yamllint@v1.21.0",
+            "reviewdog/action-tfsec@v1.30.0",
         ):
             self.assertIn(needle, combined)
 
@@ -128,7 +128,7 @@ class EtcRefactorImplementationTest(unittest.TestCase):
 
     def test_pr_d_version_and_rule_catalog_are_generated(self):
         version = (ROOT / "VERSION").read_text().strip()
-        self.assertEqual("v0.4.3", version)
+        self.assertEqual("v0.4.4", version)
 
         guide = (ROOT / "docs" / "RULE_AUTHORING.md").read_text()
         self.assertIn("<!-- RULE_CATALOG:START -->", guide)

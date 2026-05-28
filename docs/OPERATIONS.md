@@ -16,8 +16,10 @@ ruby -e 'require "yaml"; Dir[".github/workflows/*.yml", "rules/**/*.yml", ".pre-
 git diff --check
 ```
 
-5. main에 push한 뒤 `gh run watch <run-id> --exit-status`로 원격 CI를 확인한다.
-6. 기존 tag는 덮어쓰지 않는다. 후속 수정은 새 patch tag로 릴리스한다.
+5. 외부 action exact tag가 실제로 존재하는지 확인한다. 특히 reviewdog action은 repo별 release
+   번호가 서로 다르므로 같은 버전을 일괄 적용하지 않는다.
+6. main에 push한 뒤 `gh run watch <run-id> --exit-status`로 원격 CI를 확인한다.
+7. 기존 tag는 덮어쓰지 않는다. 후속 수정은 새 patch tag로 릴리스한다.
 
 ## 소비 Repo 검증
 
@@ -61,6 +63,7 @@ repo secret이 없거나 org secret 조회 권한이 없으면 실제 호출 smo
 ## CI 안정화
 
 - 공식 actions는 Node24-compatible v6 계열 exact tag로 고정한다.
+- reviewdog actions는 각 action repo에 존재하는 exact tag로 고정한다.
 - 이 repo의 `actions/setup-go`는 `go.sum`이 없으므로 `cache: false`를 유지한다.
 - 원격 CI watch 출력에 Node.js 20 deprecation annotation과 `go.sum` cache warning이 없어야 한다.
 - reusable workflow 자체는 소비 repo PR에서 최종 확인한다.
