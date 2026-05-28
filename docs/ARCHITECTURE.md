@@ -59,11 +59,12 @@
 
 ```
 공유 lint-configs 리포 (public)
-    │ git tag v0.4.2
+    │ git tag v0.4.3
     ▼
 호출 측 .github/workflows/lint.yml
-    │ uses: .../reusable-lint.yml@v0.4.2
+    │ uses: .../reusable-lint.yml@v0.4.3
     │ inputs: languages, reporter_mode, reviewdog_level, lint_mode, fail_on_error
+    │ optional: configs_ref override, rule_packs
     ▼
 GitHub Action runner
     │ checkout 대상 저장소 + 공유 lint-configs
@@ -92,7 +93,8 @@ GitHub PR
     ├─ python3 -m unittest discover -s tests -v
     │    ├─ reusable workflow 계약
     │    ├─ provider config 조립
-    │    └─ reporting/blocking 정책
+    │    ├─ reporting/blocking 정책
+    │    └─ Node24-ready action pin/cache 정책
     │
     └─ .github/workflows/ci.yml
          └─ 위 검증을 PR/push에서 재실행
@@ -113,7 +115,8 @@ GitHub PR
   - ChatGPT 웹 세션/Auth 방식은 재현성·보안 문제로 reusable workflow에서 차단
 - **공급망 방어**:
   - 공유 리포는 tag 기반 참조 (`@v0.x.y`), branch 참조 금지
-  - 외부 action은 가능하면 SHA 핀
+  - 외부 action은 exact tag로 고정하고, 공식 GitHub Actions는 Node24-compatible v6 계열 사용
+  - `setup-go` cache는 `go.sum`이 없는 이 저장소 CI에서 끄고, 소비 repo는 자기 lockfile 기준으로 별도 cache 정책 결정
 
 ## 버전/롤백
 
@@ -122,6 +125,7 @@ GitHub PR
 - 룰 1개가 false positive 폭발 시 → patch 릴리스
 - 긴급 시 호출 측 ref를 이전 tag로 되돌리면 즉시 롤백
 - 기본 lint 운영은 `lint_mode: advisory`; 저장소별 준비도에 따라 `lint_mode: blocking`으로 승격
+- tag를 원격에 푸시한 뒤에는 덮어쓰지 않고 새 patch tag로 후속 수정 배포
 
 ## 향후 확장 후보
 
@@ -129,3 +133,4 @@ GitHub PR
 - 메트릭 수집 (룰 적중률 / false positive 비율 주간 리포트)
 - 공급망 보안 (Bearer, semgrep-supply-chain)
 - ast-grep 룰 자동 fix 적용 PR 봇
+- 소비 repo fixture를 이용한 reusable workflow 정기 smoke CI

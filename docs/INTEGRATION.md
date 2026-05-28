@@ -2,13 +2,16 @@
 
 ## 공통 사전 작업
 
-1. 권장 tag: `v0.4.2` 이상.
+1. 권장 tag: `v0.4.3` 이상.
 2. 호출 측 저장소 secret 등록 (AI 리뷰 사용 시, provider별 1개만 필요):
    - Anthropic: `ANTHROPIC_API_KEY`
    - OpenAI/ChatGPT API: `OPENAI_KEY`
    - Gemini: `GEMINI_API_KEY`
 3. `GITHUB_TOKEN`은 기본 제공 → 별도 설정 불필요.
 4. 본 리포는 public이므로 checkout용 PAT 불필요.
+
+기존 호출부가 이전 tag를 참조한다면 먼저 `uses:`와 pre-commit `rev:`를 모두 권장 tag로 올립니다.
+공유 workflow의 `configs_ref` 기본값도 같은 tag를 가리키므로, 별도 override가 있는 저장소는 같이 갱신합니다.
 
 ## 기본 워크플로우
 
@@ -29,7 +32,7 @@ permissions:
 
 jobs:
   shared-lint:
-    uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.4.2
+    uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.4.3
     with:
       languages: '<쉼표 구분 언어 목록>'
       rule_packs: all
@@ -139,7 +142,7 @@ with:
 ```yaml
 repos:
   - repo: https://github.com/wiseai-oneplat/wiseai-lint-configs
-    rev: v0.4.2
+    rev: v0.4.3
     hooks:
       - id: semgrep-shared
       - id: ast-grep-shared
@@ -177,7 +180,7 @@ permissions:
 
 jobs:
   ai-review:
-    uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-ai-review.yml@v0.4.2
+    uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-ai-review.yml@v0.4.3
     with:
       ai_provider: openai-api # anthropic | openai-api | gemini | none
     secrets:
@@ -197,6 +200,26 @@ jobs:
 `chatgpt-auth`는 ChatGPT 웹 세션/쿠키 기반 인증을 의미하므로 GitHub Actions에서는 지원하지 않습니다.
 CI에서는 `openai-api`와 `OPENAI_KEY`를 사용하세요.
 
+provider별 secret 전달 예시는 다음처럼 필요한 값만 넘깁니다.
+
+```yaml
+# Anthropic
+with:
+  ai_provider: anthropic
+secrets:
+  pr_agent_token: ${{ secrets.GITHUB_TOKEN }}
+  anthropic_key: ${{ secrets.ANTHROPIC_API_KEY }}
+```
+
+```yaml
+# Gemini
+with:
+  ai_provider: gemini
+secrets:
+  pr_agent_token: ${{ secrets.GITHUB_TOKEN }}
+  gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+```
+
 ## 로컬/공유 룰 검증
 
 공유 룰을 수정하거나 호출 측에 적용 전 smoke test를 돌릴 때는 이 리포에서 다음을 실행합니다.
@@ -214,11 +237,17 @@ false positive를 확인합니다. 기본적으로 `all security reliability sty
 
 각 저장소 통합 후 확인:
 - [ ] 공유 룰 수정 시 `scripts/test-rules.sh` 통과
+- [ ] 호출부 `uses:`가 권장 tag를 참조
+- [ ] `configs_ref` override가 있다면 권장 tag와 일치
+- [ ] AI 리뷰 사용 시 provider별 secret 이름이 workflow contract와 일치
 - [ ] PR 생성 시 reviewdog 코멘트 출현 (PR diff 내 위반 시)
 - [ ] 의도된 위반에 대한 코멘트 정확성
 - [ ] False-positive 비율 < 10%
 - [ ] CI 시간 증가 < 2분
 - [ ] PR-Agent 한국어 리뷰 출력 (활성화 시)
+
+실제 소비 repo가 아직 없거나 권한이 없으면 `docs/OPERATIONS.md`의 소비 repo 검색/AI smoke 절차로
+검증 가능한 범위와 blocker를 분리해서 기록합니다.
 
 ## reviewdog 코멘트 동작
 

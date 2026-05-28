@@ -8,6 +8,17 @@ Do not bundle these with the provider, CI harness, reporting, or blocking-mode c
 should be independently reviewable, reversible, and releasable. Implementation should land as
 atomic commits that preserve the A through E follow-up boundaries.
 
+## Follow-up Status
+
+- The A through E follow-ups have landed and are covered by `python3 -m unittest discover -s tests -v`.
+- Release follow-up policy: once a tag is pushed, later CI/action warning fixes ship as a new patch
+  tag instead of moving the existing tag.
+- Current CI hardening includes Node24-compatible official GitHub Actions and disabled `setup-go`
+  cache for this repo because it has no `go.sum`.
+- Consumer repo smoke remains separate from this repo's unit harness: first search for real callers,
+  then validate a PR in that caller with the desired `lint_mode`, `reporter_mode`, `rule_packs`, and
+  `ai_provider`.
+
 ## PR-A: Workflow Language Matrix
 
 Scope: Replace repeated `contains(format(',{0},', inputs.languages), ',...,' )` expressions with a
