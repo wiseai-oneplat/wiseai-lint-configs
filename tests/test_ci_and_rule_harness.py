@@ -69,7 +69,7 @@ class CiAndRuleHarnessTest(unittest.TestCase):
             "ACTIONLINT_VERSION:",
             "semgrep==${SEMGREP_VERSION}",
             "@ast-grep/cli@${AST_GREP_VERSION}",
-            "go run github.com/rhysd/actionlint/cmd/actionlint@${ACTIONLINT_VERSION}",
+            'go run "github.com/rhysd/actionlint/cmd/actionlint@${ACTIONLINT_VERSION}"',
             "pre-commit validate-manifest .pre-commit-hooks.yaml",
             "pre-commit try-repo",
             "YAML.load_file",

@@ -121,9 +121,9 @@ jobs:
             exit 0
           fi
           semgrep --metrics off "${semgrep_args[@]}" --sarif --no-error > semgrep.sarif || true
-          cat semgrep.sarif | reviewdog -f=sarif -name=semgrep \
+          reviewdog -f=sarif -name=semgrep \
             -reporter="${REVIEWDOG_REPORTER}" -level="${REVIEWDOG_LEVEL}" \
-            -fail-on-error="${REVIEWDOG_FAIL_ON_ERROR}"
+            -fail-on-error="${REVIEWDOG_FAIL_ON_ERROR}" < semgrep.sarif
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.reviewdog_token }}
 
@@ -203,9 +203,9 @@ jobs:
         run: |
           cppcheck --enable=warning,style,performance --inline-suppr --quiet \
             --template='{file}:{line}:{column}: {severity}: {message}' . 2> cppcheck.out || true
-          cat cppcheck.out | reviewdog -efm="%f:%l:%c: %t%*[^:]: %m" -name=cppcheck \
+          reviewdog -efm="%f:%l:%c: %t%*[^:]: %m" -name=cppcheck \
             -reporter="${REVIEWDOG_REPORTER}" -level="${REVIEWDOG_LEVEL}" \
-            -fail-on-error="${REVIEWDOG_FAIL_ON_ERROR}"
+            -fail-on-error="${REVIEWDOG_FAIL_ON_ERROR}" < cppcheck.out
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.reviewdog_token }}
 
@@ -225,9 +225,9 @@ jobs:
         continue-on-error: ${{ inputs.lint_mode == 'advisory' && inputs.fail_on_error == false }}
         run: |
           npx stylelint "**/*.{css,scss,sass,less}" --formatter compact > stylelint.out || true
-          cat stylelint.out | reviewdog -efm="%f: line %l, col %c, %t%*[^-]- %m" \
+          reviewdog -efm="%f: line %l, col %c, %t%*[^-]- %m" \
             -name=stylelint -reporter="${REVIEWDOG_REPORTER}" -level="${REVIEWDOG_LEVEL}" \
-            -fail-on-error="${REVIEWDOG_FAIL_ON_ERROR}"
+            -fail-on-error="${REVIEWDOG_FAIL_ON_ERROR}" < stylelint.out
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.reviewdog_token }}
 

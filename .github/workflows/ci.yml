@@ -70,7 +70,7 @@ jobs:
           ruby -e "require 'yaml'; Dir['.github/workflows/*.yml','.github/workflows/*.yaml','semgrep/rules/*.yaml','ast-grep/**/*.yml','ast-grep/**/*.yaml','pre-commit/*.yaml','.pre-commit-hooks.yaml'].each { |f| YAML.load_file(f) }; puts 'yaml ok'"
 
       - name: Validate GitHub Actions workflows
-        run: go run github.com/rhysd/actionlint/cmd/actionlint@${ACTIONLINT_VERSION}
+        run: go run "github.com/rhysd/actionlint/cmd/actionlint@${ACTIONLINT_VERSION}"
 
       - name: Test shared rules
         env:
