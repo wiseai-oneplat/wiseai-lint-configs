@@ -5,6 +5,7 @@
 #     uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.4.1
 #     with:
 #       languages: 'python,go'
+#       rule_packs: all
 #       lint_mode: advisory
 #       reporter_mode: github-pr-review
 #     secrets:
@@ -24,6 +25,11 @@ on:
         required: false
         type: string
         default: 'v0.4.1'
+      rule_packs:
+        description: '쉼표 구분 룰 팩 목록: all, security, reliability, style, infra'
+        required: false
+        type: string
+        default: 'all'
       reporter_mode:
         description: 'reviewdog reporter mode'
         required: false
@@ -52,24 +58,69 @@ env:
   REVIEWDOG_REPORTER: ${{ inputs.reporter_mode }}
   REVIEWDOG_LEVEL: ${{ inputs.reviewdog_level }}
   REVIEWDOG_FAIL_ON_ERROR: ${{ inputs.fail_on_error || inputs.lint_mode == 'blocking' }}
+  SEMGREP_VERSION: '1.164.0'
+  AST_GREP_VERSION: '0.43.0'
+  STYLELINT_VERSION: '17.12.0'
+  STYLELINT_CONFIG_STANDARD_VERSION: '40.0.0'
+  KUBECONFORM_VERSION: '0.7.0'
 
 jobs:
-  semgrep:
+  language-matrix:
     runs-on: ubuntu-latest
-    if: contains(format(',{0},', inputs.languages), ',python,') || contains(format(',{0},', inputs.languages), ',go,') || contains(format(',{0},', inputs.languages), ',java,') || contains(format(',{0},', inputs.languages), ',typescript,') || contains(format(',{0},', inputs.languages), ',javascript,') || contains(format(',{0},', inputs.languages), ',c,') || contains(format(',{0},', inputs.languages), ',cpp,') || contains(format(',{0},', inputs.languages), ',terraform,') || contains(format(',{0},', inputs.languages), ',kubernetes,') || contains(format(',{0},', inputs.languages), ',helm,')
+    outputs:
+      semgrep: ${{ steps.resolve.outputs.semgrep }}
+      ast_grep: ${{ steps.resolve.outputs.ast_grep }}
+      shellcheck: ${{ steps.resolve.outputs.shellcheck }}
+      hadolint: ${{ steps.resolve.outputs.hadolint }}
+      cppcheck: ${{ steps.resolve.outputs.cppcheck }}
+      stylelint: ${{ steps.resolve.outputs.stylelint }}
+      yamllint: ${{ steps.resolve.outputs.yamllint }}
+      tfsec: ${{ steps.resolve.outputs.tfsec }}
+      helm_lint: ${{ steps.resolve.outputs.helm_lint }}
+      kubeconform: ${{ steps.resolve.outputs.kubeconform }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.3.1
         with:
           repository: wiseai-oneplat/wiseai-lint-configs
           ref: ${{ inputs.configs_ref }}
           path: .lint-configs
-      - uses: reviewdog/action-setup@v1
-      - run: pip install semgrep
+      - id: resolve
+        name: Resolve language jobs
+        run: |
+          python3 .lint-configs/scripts/resolve-language-jobs.py \
+            --languages "${{ inputs.languages }}" \
+            --github-output "$GITHUB_OUTPUT"
+
+  semgrep:
+    runs-on: ubuntu-latest
+    needs: language-matrix
+    if: needs.language-matrix.outputs.semgrep == 'true'
+    steps:
+      - uses: actions/checkout@v4.3.1
+      - uses: actions/checkout@v4.3.1
+        with:
+          repository: wiseai-oneplat/wiseai-lint-configs
+          ref: ${{ inputs.configs_ref }}
+          path: .lint-configs
+      - uses: reviewdog/action-setup@v1.9.0
+      - name: Install semgrep
+        run: python3 -m pip install "semgrep==${SEMGREP_VERSION}"
+      - name: Resolve semgrep rule packs
+        run: |
+          python3 .lint-configs/scripts/resolve-rule-packs.py \
+            --tool semgrep \
+            --packs "${{ inputs.rule_packs }}" \
+            --root .lint-configs \
+            --write-args semgrep-args.txt
       - name: Run semgrep
         continue-on-error: ${{ inputs.lint_mode == 'advisory' && inputs.fail_on_error == false }}
         run: |
-          semgrep --metrics off --config .lint-configs/semgrep/rules/ --sarif --no-error > semgrep.sarif || true
+          mapfile -t semgrep_args < semgrep-args.txt
+          if [ "${#semgrep_args[@]}" -eq 0 ]; then
+            echo "No semgrep rules selected for rule_packs=${{ inputs.rule_packs }}"
+            exit 0
+          fi
+          semgrep --metrics off "${semgrep_args[@]}" --sarif --no-error > semgrep.sarif || true
           cat semgrep.sarif | reviewdog -f=sarif -name=semgrep \
             -reporter="${REVIEWDOG_REPORTER}" -level="${REVIEWDOG_LEVEL}" \
             -fail-on-error="${REVIEWDOG_FAIL_ON_ERROR}"
@@ -78,25 +129,47 @@ jobs:
 
   ast-grep:
     runs-on: ubuntu-latest
-    if: contains(format(',{0},', inputs.languages), ',python,') || contains(format(',{0},', inputs.languages), ',go,') || contains(format(',{0},', inputs.languages), ',java,') || contains(format(',{0},', inputs.languages), ',typescript,') || contains(format(',{0},', inputs.languages), ',javascript,') || contains(format(',{0},', inputs.languages), ',vue,') || contains(format(',{0},', inputs.languages), ',c,') || contains(format(',{0},', inputs.languages), ',cpp,') || contains(format(',{0},', inputs.languages), ',css,')
+    needs: language-matrix
+    if: needs.language-matrix.outputs.ast_grep == 'true'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.3.1
+      - uses: actions/checkout@v4.3.1
         with:
           repository: wiseai-oneplat/wiseai-lint-configs
           ref: ${{ inputs.configs_ref }}
           path: .lint-configs
-      - uses: ast-grep/action@v1
+      - id: ast_grep_packs
+        name: Resolve ast-grep rule packs
+        run: |
+          python3 .lint-configs/scripts/resolve-rule-packs.py \
+            --tool ast-grep \
+            --packs "${{ inputs.rule_packs }}" \
+            --root .lint-configs \
+            --json > ast-grep-packs.json
+          python3 .lint-configs/scripts/resolve-rule-packs.py \
+            --tool ast-grep \
+            --packs "${{ inputs.rule_packs }}" \
+            --root .lint-configs \
+            --write-config ast-grep-pack-sgconfig.yml
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          paths = json.loads(open("ast-grep-packs.json").read())["paths"]
+          print(f"selected={'true' if paths else 'false'}")
+          PY
+      - uses: ast-grep/action@v1.5.0
+        if: steps.ast_grep_packs.outputs.selected == 'true'
         continue-on-error: ${{ inputs.lint_mode == 'advisory' && inputs.fail_on_error == false }}
         with:
-          config: .lint-configs/ast-grep/sgconfig.yml
+          version: ${{ env.AST_GREP_VERSION }}
+          config: ast-grep-pack-sgconfig.yml
 
   shellcheck:
     runs-on: ubuntu-latest
-    if: contains(format(',{0},', inputs.languages), ',shell,')
+    needs: language-matrix
+    if: needs.language-matrix.outputs.shellcheck == 'true'
     steps:
-      - uses: actions/checkout@v4
-      - uses: reviewdog/action-shellcheck@v1
+      - uses: actions/checkout@v4.3.1
+      - uses: reviewdog/action-shellcheck@v1.9.0
         with:
           github_token: ${{ secrets.reviewdog_token }}
           reporter: ${{ inputs.reporter_mode }}
@@ -105,10 +178,11 @@ jobs:
 
   hadolint:
     runs-on: ubuntu-latest
-    if: contains(format(',{0},', inputs.languages), ',dockerfile,')
+    needs: language-matrix
+    if: needs.language-matrix.outputs.hadolint == 'true'
     steps:
-      - uses: actions/checkout@v4
-      - uses: reviewdog/action-hadolint@v1
+      - uses: actions/checkout@v4.3.1
+      - uses: reviewdog/action-hadolint@v1.9.0
         with:
           github_token: ${{ secrets.reviewdog_token }}
           reporter: ${{ inputs.reporter_mode }}
@@ -117,12 +191,13 @@ jobs:
 
   cppcheck:
     runs-on: ubuntu-latest
-    if: contains(format(',{0},', inputs.languages), ',c,') || contains(format(',{0},', inputs.languages), ',cpp,')
+    needs: language-matrix
+    if: needs.language-matrix.outputs.cppcheck == 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.3.1
       - name: Install cppcheck
         run: sudo apt-get update && sudo apt-get install -y cppcheck
-      - uses: reviewdog/action-setup@v1
+      - uses: reviewdog/action-setup@v1.9.0
       - name: Run cppcheck
         continue-on-error: ${{ inputs.lint_mode == 'advisory' && inputs.fail_on_error == false }}
         run: |
@@ -136,15 +211,16 @@ jobs:
 
   stylelint:
     runs-on: ubuntu-latest
-    if: contains(format(',{0},', inputs.languages), ',css,')
+    needs: language-matrix
+    if: needs.language-matrix.outputs.stylelint == 'true'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v4.3.1
+      - uses: actions/setup-node@v4.4.0
         with:
           node-version: '20'
       - name: Install stylelint
-        run: npm install -g stylelint stylelint-config-standard
-      - uses: reviewdog/action-setup@v1
+        run: npm install -g "stylelint@${STYLELINT_VERSION}" "stylelint-config-standard@${STYLELINT_CONFIG_STANDARD_VERSION}"
+      - uses: reviewdog/action-setup@v1.9.0
       - name: Run stylelint
         continue-on-error: ${{ inputs.lint_mode == 'advisory' && inputs.fail_on_error == false }}
         run: |
@@ -157,10 +233,11 @@ jobs:
 
   yamllint:
     runs-on: ubuntu-latest
-    if: contains(format(',{0},', inputs.languages), ',yaml,')
+    needs: language-matrix
+    if: needs.language-matrix.outputs.yamllint == 'true'
     steps:
-      - uses: actions/checkout@v4
-      - uses: reviewdog/action-yamllint@v1
+      - uses: actions/checkout@v4.3.1
+      - uses: reviewdog/action-yamllint@v1.9.0
         with:
           github_token: ${{ secrets.reviewdog_token }}
           reporter: ${{ inputs.reporter_mode }}
@@ -169,10 +246,11 @@ jobs:
 
   tfsec:
     runs-on: ubuntu-latest
-    if: contains(format(',{0},', inputs.languages), ',terraform,')
+    needs: language-matrix
+    if: needs.language-matrix.outputs.tfsec == 'true'
     steps:
-      - uses: actions/checkout@v4
-      - uses: reviewdog/action-tfsec@v1
+      - uses: actions/checkout@v4.3.1
+      - uses: reviewdog/action-tfsec@v1.9.0
         with:
           github_token: ${{ secrets.reviewdog_token }}
           reporter: ${{ inputs.reporter_mode }}
@@ -181,10 +259,11 @@ jobs:
 
   helm-lint:
     runs-on: ubuntu-latest
-    if: contains(format(',{0},', inputs.languages), ',helm,')
+    needs: language-matrix
+    if: needs.language-matrix.outputs.helm_lint == 'true'
     steps:
-      - uses: actions/checkout@v4
-      - uses: azure/setup-helm@v4
+      - uses: actions/checkout@v4.3.1
+      - uses: azure/setup-helm@v4.3.1
       - name: Run helm lint
         continue-on-error: ${{ inputs.lint_mode == 'advisory' && inputs.fail_on_error == false }}
         run: |
@@ -205,12 +284,13 @@ jobs:
 
   kubeconform:
     runs-on: ubuntu-latest
-    if: contains(format(',{0},', inputs.languages), ',kubernetes,') || contains(format(',{0},', inputs.languages), ',helm,')
+    needs: language-matrix
+    if: needs.language-matrix.outputs.kubeconform == 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.3.1
       - name: Install kubeconform
         run: |
-          curl -sL https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz | tar xz
+          curl -sL "https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz" | tar xz
           sudo mv kubeconform /usr/local/bin/
       - name: Validate manifests
         continue-on-error: ${{ inputs.lint_mode == 'advisory' && inputs.fail_on_error == false }}

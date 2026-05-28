@@ -1,0 +1,5 @@
+# Semgrep rule files for reliability and runtime safety findings.
+semgrep/rules/go.yaml
+semgrep/rules/python.yaml
+semgrep/rules/java.yaml
+semgrep/rules/typescript.yaml

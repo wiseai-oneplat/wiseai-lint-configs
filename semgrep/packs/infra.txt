@@ -1,0 +1,3 @@
+# Semgrep rule files for infrastructure and platform findings.
+semgrep/rules/kubernetes.yaml
+semgrep/rules/terraform.yaml

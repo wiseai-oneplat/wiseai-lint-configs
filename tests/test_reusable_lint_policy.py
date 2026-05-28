@@ -48,7 +48,7 @@ class ReusableLintPolicyTest(unittest.TestCase):
         text = WORKFLOW.read_text()
         for job in ("helm-lint", "kubeconform"):
             with self.subTest(job=job):
-                index = text.find(f"{job}:")
+                index = text.find(f"\n  {job}:")
                 self.assertNotEqual(index, -1, f"missing {job}")
                 block = text[index : index + 1400]
                 self.assertIn("GITHUB_STEP_SUMMARY", block)

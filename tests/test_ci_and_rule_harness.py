@@ -22,6 +22,8 @@ class CiAndRuleHarnessTest(unittest.TestCase):
             "fixtures/ast-grep/positive",
             "fixtures/ast-grep/negative",
             "assert-rule-findings.py",
+            "resolve-rule-packs.py",
+            "RULE_PACKS_TO_TEST",
             "SEMGREP_SEND_METRICS=off",
             "--metrics off",
             "STRICT_RULE_TOOLS",
@@ -59,10 +61,15 @@ class CiAndRuleHarnessTest(unittest.TestCase):
         for needle in (
             "python3 -m unittest discover -s tests -v",
             "python3 -m py_compile",
+            "scripts/generate-rule-catalog.py --check",
             "scripts/test-rules.sh",
             "STRICT_RULE_TOOLS: 'true'",
-            "pip install semgrep",
-            "npm install -g @ast-grep/cli",
+            "SEMGREP_VERSION:",
+            "AST_GREP_VERSION:",
+            "semgrep==${SEMGREP_VERSION}",
+            "@ast-grep/cli@${AST_GREP_VERSION}",
+            "pre-commit validate-manifest .pre-commit-hooks.yaml",
+            "pre-commit try-repo",
             "YAML.load_file",
         ):
             self.assertIn(needle, text)

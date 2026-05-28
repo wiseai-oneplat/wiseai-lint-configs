@@ -1,14 +1,3 @@
-# pre-commit remote repo로 참조 가능한 hooks
-# 호출 측 .pre-commit-config.yaml 예시:
-#   - repo: https://github.com/wiseai-oneplat/wiseai-lint-configs
-#     rev: v0.4.1
-#     hooks:
-#       - id: semgrep-shared
-#       - id: ast-grep-shared
-#       - id: shellcheck-shared      # *.sh가 있는 저장소만
-#       - id: hadolint-shared        # Dockerfile이 있는 저장소만
-#       - id: yamllint-shared        # YAML 검사 원할 시
-
 - id: semgrep-shared
   name: shared semgrep rules
   description: Run wiseai shared semgrep rules.

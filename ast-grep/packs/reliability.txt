@@ -1,0 +1,2 @@
+# ast-grep rule directories for reliability findings.
+ast-grep/rules/go

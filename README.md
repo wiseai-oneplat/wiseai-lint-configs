@@ -6,12 +6,13 @@
 
 | 경로 | 내용 |
 |------|------|
-| `semgrep/rules/` | 언어별 semgrep 룰 |
-| `ast-grep/rules/` | 언어별 ast-grep 룰 |
+| `semgrep/rules/`, `semgrep/packs/` | 언어별 semgrep 룰 + opt-in rule pack manifest |
+| `ast-grep/rules/`, `ast-grep/packs/` | 언어별 ast-grep 룰 + opt-in rule pack manifest |
 | `pre-commit/` | pre-commit remote repo 호환 hooks |
 | `.github/workflows/` | GitHub reusable workflow (`reusable-lint.yml`, `reusable-ai-review.yml`) |
 | `pr-agent/` | PR-Agent/Qodo Merge provider profiles + 한국어 리뷰 정책 |
 | `docs/` | 통합/학습/룰 작성 문서 |
+| `VERSION` | 문서/릴리스 권장 tag의 단일 기준 |
 
 ## 지원 언어/도메인
 
@@ -61,6 +62,9 @@
 - `reusable-lint.yml`은 기본적으로 `lint_mode: advisory`로 PR 코멘트/요약만 남깁니다.
   머지 차단이 필요한 저장소는 `lint_mode: blocking` 또는 `fail_on_error: true`를 명시합니다.
 - reviewdog 출력 방식은 `reporter_mode`, 코멘트 severity는 `reviewdog_level`로 조정합니다.
+- `rule_packs`로 `security`, `reliability`, `style`, `infra` 룰 팩을 선택합니다. 기본값 `all`은 기존
+  `languages` 동작과 호환됩니다.
+- 룰 카탈로그는 `scripts/generate-rule-catalog.py --check`로 검증하고, 필요하면 `--write`로 갱신합니다.
 
 ## 버전 정책
 

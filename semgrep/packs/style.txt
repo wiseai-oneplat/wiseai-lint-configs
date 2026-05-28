@@ -1,0 +1,5 @@
+# Semgrep rule files for maintainability and style findings.
+semgrep/rules/python.yaml
+semgrep/rules/java.yaml
+semgrep/rules/typescript.yaml
+semgrep/rules/javascript.yaml

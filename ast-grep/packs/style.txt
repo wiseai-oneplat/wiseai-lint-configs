@@ -1,0 +1,4 @@
+# ast-grep rule directories for style findings.
+ast-grep/rules/java
+ast-grep/rules/python
+ast-grep/rules/typescript

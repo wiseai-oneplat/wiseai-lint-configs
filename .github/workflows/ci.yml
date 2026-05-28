@@ -9,34 +9,60 @@ on:
 permissions:
   contents: read
 
+env:
+  SEMGREP_VERSION: '1.164.0'
+  AST_GREP_VERSION: '0.43.0'
+  PRE_COMMIT_VERSION: '4.3.0'
+
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.3.1
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5.6.0
         with:
           python-version: '3.11'
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4.4.0
         with:
           node-version: '20'
 
       - name: Install rule engines
         run: |
-          python3 -m pip install semgrep
-          npm install -g @ast-grep/cli
+          python3 -m pip install "semgrep==${SEMGREP_VERSION}" "pre-commit==${PRE_COMMIT_VERSION}"
+          npm install -g "@ast-grep/cli@${AST_GREP_VERSION}"
 
       - name: Run unit tests
         run: python3 -m unittest discover -s tests -v
 
+      - name: Verify generated rule catalog
+        run: python3 scripts/generate-rule-catalog.py --check
+
       - name: Compile Python helpers
         run: python3 -m py_compile scripts/*.py tests/*.py
 
+      - name: Validate pre-commit manifests
+        run: |
+          pre-commit validate-manifest .pre-commit-hooks.yaml
+          pre-commit validate-manifest pre-commit/shared-hooks.yaml
+
+      - name: Smoke-test pre-commit remote hooks
+        run: |
+          tmprepo="$(mktemp -d)"
+          git init "$tmprepo"
+          printf 'import datetime\n\ndatetime.datetime.now(tz=datetime.timezone.utc)\n' > "$tmprepo/safe.py"
+          printf 'const value = "ready";\n' > "$tmprepo/safe.ts"
+          git -C "$tmprepo" add safe.py safe.ts
+          (
+            cd "$tmprepo"
+            pre-commit try-repo "$GITHUB_WORKSPACE" semgrep-shared --all-files
+            pre-commit try-repo "$GITHUB_WORKSPACE" ast-grep-shared --all-files
+          )
+
       - name: Validate YAML files
         run: |
-          ruby -e "require 'yaml'; Dir['.github/workflows/*.yml','.github/workflows/*.yaml','semgrep/rules/*.yaml','ast-grep/**/*.yml','ast-grep/**/*.yaml','pre-commit/*.yaml'].each { |f| YAML.load_file(f) }; puts 'yaml ok'"
+          ruby -e "require 'yaml'; Dir['.github/workflows/*.yml','.github/workflows/*.yaml','semgrep/rules/*.yaml','ast-grep/**/*.yml','ast-grep/**/*.yaml','pre-commit/*.yaml','.pre-commit-hooks.yaml'].each { |f| YAML.load_file(f) }; puts 'yaml ok'"
 
       - name: Test shared rules
         env:

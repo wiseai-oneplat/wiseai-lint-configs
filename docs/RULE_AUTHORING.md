@@ -59,33 +59,41 @@
 
 ## 룰 카탈로그 (v0.4.1)
 
+<!-- RULE_CATALOG:START -->
 | ID | 도구 | 언어/도메인 | severity |
 |----|------|------------|----------|
 | hardcoded-secret-key | semgrep | all | ERROR |
 | unresolved-fixme | semgrep | all | INFO |
-| python-naive-datetime | semgrep | python | WARNING |
-| python-print-in-source | semgrep | python | WARNING |
+| c-gets-unsafe | semgrep | c | ERROR |
+| c-strcpy-unsafe | semgrep | c | WARNING |
+| c-sprintf-unsafe | semgrep | c | WARNING |
+| cpp-using-namespace-std-in-header | semgrep | cpp | WARNING |
+| cpp-naked-new | semgrep | cpp | WARNING |
 | go-panic-in-library | semgrep | go | ERROR |
 | go-context-background-in-handler | semgrep | go | WARNING |
 | java-system-out-println | semgrep | java | WARNING |
 | java-field-autowired | semgrep | java | WARNING |
-| typescript-console-log | semgrep | typescript/javascript | WARNING |
-| typescript-as-any | semgrep | typescript | WARNING |
 | javascript-eval-usage | semgrep | javascript | ERROR |
-| c-gets-unsafe | semgrep | c | ERROR |
-| cpp-using-namespace-std-in-header | semgrep | cpp | WARNING |
-| terraform-public-s3 | semgrep | terraform | ERROR |
+| javascript-document-write | semgrep | javascript | WARNING |
 | k8s-image-tag-latest | semgrep | kubernetes | ERROR |
-| k8s-missing-resource-limits | semgrep | kubernetes | WARNING |
-| k8s-runAsNonRoot-missing | semgrep | kubernetes | WARNING |
+| k8s-image-tag-missing | semgrep | kubernetes | WARNING |
 | k8s-privileged-true | semgrep | kubernetes | ERROR |
 | k8s-hostnetwork-true | semgrep | kubernetes | ERROR |
-| no-print | ast-grep | python | warning |
+| k8s-imagepullpolicy-always-missing | semgrep | kubernetes | INFO |
+| python-naive-datetime | semgrep | python | WARNING |
+| python-print-in-source | semgrep | python | WARNING |
+| terraform-public-s3 | semgrep | terraform | ERROR |
+| terraform-missing-tags | semgrep | terraform | INFO |
+| typescript-console-log | semgrep | typescript/javascript | WARNING |
+| typescript-as-any | semgrep | typescript | WARNING |
 | no-panic | ast-grep | go | error |
 | no-system-out | ast-grep | java | warning |
-| no-console | ast-grep | typescript/javascript | warning |
+| no-print | ast-grep | python | warning |
+| no-console | ast-grep | typescript | warning |
+<!-- RULE_CATALOG:END -->
 
-룰 추가/제거 시 이 표를 업데이트할 것.
+룰 추가/제거 시 `python3 scripts/generate-rule-catalog.py --write`로 이 표를 갱신하고,
+CI에서는 `python3 scripts/generate-rule-catalog.py --check`로 drift를 차단한다.
 
 ## 룰 작성 일반 가이드
 

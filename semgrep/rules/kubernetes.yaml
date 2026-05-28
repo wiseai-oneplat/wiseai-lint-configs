@@ -17,7 +17,7 @@ rules:
     paths:
       include:
         - '**/templates/**'
-        - 'manifest/**'
+        - '**/manifest/**'
 
   - id: k8s-privileged-true
     message: "privileged: true는 사용하지 마세요. 필요한 capability만 추가하세요."
@@ -39,4 +39,4 @@ rules:
     paths:
       include:
         - '**/templates/**'
-        - 'manifest/**'
+        - '**/manifest/**'

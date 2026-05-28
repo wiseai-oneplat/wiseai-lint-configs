@@ -32,6 +32,7 @@ jobs:
     uses: wiseai-oneplat/wiseai-lint-configs/.github/workflows/reusable-lint.yml@v0.4.1
     with:
       languages: '<쉼표 구분 언어 목록>'
+      rule_packs: all
       lint_mode: advisory
       reporter_mode: github-pr-review
     secrets:
@@ -59,6 +60,22 @@ jobs:
 | `yaml` | yamllint |
 
 여러 값을 쉼표로 결합. 예: `'python,go,dockerfile'`.
+
+워크플로우 내부에서는 `scripts/resolve-language-jobs.py`가 이 값을 한 번 정규화한 뒤 각 job의 실행 여부를
+`language-matrix` job output으로 전달합니다. 따라서 `c`는 `css`, `typescript`, `dockerfile`과 매칭되지 않습니다.
+
+## `rule_packs` 인자 → 활성화되는 공유 룰 묶음
+
+| 값 | 용도 |
+|----|------|
+| `all` | 기본값. 기존 `languages` 기반 동작과 호환되도록 모든 pack 사용. |
+| `security` | 시크릿, 위험 API, 플랫폼 보안 관련 룰. |
+| `reliability` | 런타임 안정성, context/시간 처리, 타입 안정성 룰. |
+| `style` | logger/console/출력 등 유지보수성 룰. |
+| `infra` | Kubernetes/Terraform 등 인프라 룰. |
+
+여러 값을 쉼표로 결합할 수 있습니다. 예: `security,infra`.
+semgrep pack manifest는 `semgrep/packs/*.txt`, ast-grep pack manifest는 `ast-grep/packs/*.txt`에 있습니다.
 
 ## reporting / blocking 정책
 
@@ -131,6 +148,17 @@ repos:
       - id: yamllint-shared      # yaml 검사 원할 시
 ```
 
+이 리포 자체에서는 pre-commit remote repo 호환성을 위해 루트 `.pre-commit-hooks.yaml`와
+`pre-commit/shared-hooks.yaml`를 모두 유지합니다. `semgrep-shared`와 `ast-grep-shared`는 hook repo
+내 wrapper script가 공유 룰 경로를 해석하므로, 호출 측 저장소에 룰 파일을 복사할 필요가 없습니다.
+단, pre-commit 실행 환경의 `PATH`에는 선택한 hook에 필요한 도구(`semgrep`, `sg`, `shellcheck`,
+`hadolint`, `yamllint`)가 있어야 합니다. 변경 후에는 다음 검증을 통과해야 합니다.
+
+```bash
+pre-commit validate-manifest .pre-commit-hooks.yaml
+pre-commit validate-manifest pre-commit/shared-hooks.yaml
+```
+
 ## AI 리뷰 활성화 (옵션)
 
 호출 측 저장소의 `.github/workflows/ai-review.yml`:
@@ -179,7 +207,8 @@ scripts/test-rules.sh
 
 이 스크립트는 `fixtures/semgrep/positive`, `fixtures/semgrep/negative`,
 `fixtures/ast-grep/positive`, `fixtures/ast-grep/negative`를 기준으로 룰의 기대 finding과
-false positive를 확인합니다. 로컬에 semgrep 또는 ast-grep이 없으면 해당 도구 검증은 skip됩니다.
+false positive를 확인합니다. 기본적으로 `all security reliability style infra` pack을 모두 검증하며,
+`RULE_PACKS_TO_TEST`로 대상 pack을 좁힐 수 있습니다. 로컬에 semgrep 또는 ast-grep이 없으면 해당 도구 검증은 skip됩니다.
 
 ## 통합 검증 체크리스트
 

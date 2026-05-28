@@ -1,0 +1,7 @@
+# Semgrep rule files for security-oriented findings.
+semgrep/rules/base.yaml
+semgrep/rules/c.yaml
+semgrep/rules/cpp.yaml
+semgrep/rules/javascript.yaml
+semgrep/rules/kubernetes.yaml
+semgrep/rules/terraform.yaml
